@@ -7,10 +7,11 @@ Welcome to mothergeo's documentation!
 =====================================
 
 .. toctree::
+   :glob:
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Articles:
 
-
+   articles/*
 
 Indices and tables
 ==================
