@@ -9,6 +9,7 @@ Welcome to mothergeo's documentation!
 Word to your mother.
 
 .. toctree::
+    :glob:
     :maxdepth: 2
 
     development

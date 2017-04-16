@@ -1,13 +1,15 @@
 .. _api-doc:
 
+.. toctree::
+    :glob:
+
 API Documentation
 =================
-
 Read the docs.
 
-Modules
-=======
-
+---------
+mothergeo
+---------
 .. automodule:: mothergeo
     :members:
     :undoc-members:
@@ -15,6 +17,9 @@ Modules
     :show-inheritance:
     :synopsis: Synopisis of the main module...
 
+-----------------
+mothergeo.testmod
+-----------------
 .. automodule:: mothergeo.testmod
     :members:
     :undoc-members:
