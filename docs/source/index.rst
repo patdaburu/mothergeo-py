@@ -6,12 +6,15 @@
 Welcome to mothergeo's documentation!
 =====================================
 
-.. toctree::
-   :glob:
-   :maxdepth: 2
-   :caption: Articles:
+Word to your mother.
 
-   articles/*
+.. toctree::
+    :maxdepth: 2
+
+    development
+    api
+
+
 
 Indices and tables
 ==================
@@ -19,3 +22,7 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+
+

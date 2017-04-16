@@ -92,4 +92,7 @@ mother-env/
 # PyCharm
 .idea
 
+# Scratch Directory
+scratch/
+
 
