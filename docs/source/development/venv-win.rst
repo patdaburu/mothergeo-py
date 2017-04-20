@@ -15,17 +15,17 @@ Create a Virtual Python Environment
 
 The following commands will create a new virtual environment under my-project/my-venv.
 
-.. code-block:: bash
+.. code-block:: doscon
 
     cd my-project
-    virtualenv --python "C:\Path\To\Python\python.exe" venv
+    virtualenv --python C:\Path\To\Python\python.exe venv
 
 Activate the Environment
 ========================
 
 Now that we have a virtual environment, we need to activate it.
 
-.. code-block:: bash
+.. code-block:: doscon
 
     .\venv\Scripts\activate
 
@@ -39,13 +39,13 @@ of your dependencies using ``pip``.
 
 The following command creates a file called ``requirements.txt`` that enumerates the installed packages.
 
-.. code-block:: bash
+.. code-block:: doscon
 
     pip freeze > requirements.txt
 
 This file can then be used by collaborators to update virtual environments using the following command.
 
-.. code-block:: bash
+.. code-block:: doscon
 
     pip install -r requirements.txt
 
@@ -54,7 +54,7 @@ Deactivate the Environment
 
 To return to normal system settings, use the ``deactivate`` command.
 
-.. code-block:: bash
+.. code-block:: doscon
 
     deactivate
 
