@@ -1,4 +1,4 @@
-.. _venv-setup-linux:
+.. _venv-setup-win:
 
 *********************************************
 Set Up a Virtual Python Environment (Windows)

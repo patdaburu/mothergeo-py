@@ -17,12 +17,12 @@ mothergeo
     :show-inheritance:
     :synopsis: Synopisis of the main module...
 
------------------
-mothergeo.testmod
------------------
-.. automodule:: mothergeo.testmod
+----------------------
+mothergeo.formats.data
+----------------------
+.. automodule:: mothergeo.formats.data
     :members:
     :undoc-members:
     :inherited-members:
     :show-inheritance:
-    :synopsis: Synopisis of the test module...
+    :synopsis: mothergeo data formats.

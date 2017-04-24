@@ -1,4 +1,4 @@
-.. _venv-setup-win:
+.. _venv-setup:
 
 *******************************************
 Set Up a Virtual Python Environment (Linux)
