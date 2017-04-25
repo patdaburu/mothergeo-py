@@ -11,6 +11,7 @@ GIS handling that cares.
 import logging
 
 __version__ = '0.0.1'
+__release__ = '0.0.1'
 
 # Set default logging handler to avoid "No handler found" warnings.
 try:  # Python 2.7+

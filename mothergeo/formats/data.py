@@ -181,7 +181,9 @@ class SpatialRelations(_Relations):
 
 
 class Model(object):
-
+    """
+    Instances of this class describe a data model.
+    """
     def __init__(self, name, revision, spatial_relations):
         self._name = name
         self._revision = revision
@@ -189,14 +191,32 @@ class Model(object):
 
     @property
     def name(self):
-        return self.name
+        """
+        Get the model's name.
+        
+        :return: the model's name
+        :rtype:  ``str``
+        """
+        return self._name
 
     @property
     def revision(self):
+        """
+        Get the model's revision information.
+        
+        :return: the model's revision information
+        :rtype:  :py:class:`Revision`
+        """
         return self._revision
 
     @property
     def spatial_relations(self):
+        """
+        Get the model's spatial relation information.
+        
+        :return: the model's spatial relation information
+        :rtype:  :py:class:`SpatialRelations`
+        """
         return self._spatial_relations.values()
 
 
