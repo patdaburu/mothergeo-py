@@ -8,6 +8,7 @@
 mothergeo data formats.
 """
 
+from insensitive_dict import CaseInsensitiveDict
 import json
 import numbers
 from enum import Enum
@@ -38,26 +39,38 @@ class DataType(Enum):
     """
     These are the supported data types.
     """
-    UNKNOWN = 0,
-    TEXT = 1,
-    UUID = 2,
-    INT = 3,
-    FLOAT = 4
+    UNKNOWN = 0  #: The data type is unknown.
+    TEXT = 1     #: This is character data.
+    UUID = 2     #: This is a universally unique identifier.
+    INT = 3      #: This is an integer.
+    FLOAT = 4    #: This is a floating-point number.
 
 
-class DataRequirement(Enum):
-    NONE = 0,
-    REQUESTED = 1,
-    REQUIRED = 2
+class Requirement(Enum):
+    """
+    How important is it that data be provided?  For example, a data field that is ``REQUESTED`` is a field for which we
+    may ask, but a field that is ``REQUIRED`` *must* have data in it it.
+    """
+    NONE = 0       #: There is no requirement for this data to be present.
+    REQUESTED = 1  #: We would like the data to be present.
+    REQUIRED = 2   #: The data *must* be present.
 
 
 class Source(object):
-
+    """
+    This object provides information about our expectations regarding the source from which data comes.
+    """
     def __init__(self, requirement):
         self._requirement = requirement
 
     @property
     def requirement(self):
+        """
+        Is this data required? or requested? or neither?
+        
+        :return:  the data requirement 
+        :rtype:   :py:class:`Requirement`
+        """
         return self._requirement
 
 
@@ -65,13 +78,54 @@ class Field(object):
     """
     This class describes a field in a relation (like a table, or a feature class).
     """
-    def __init__(self, name, type, width):
-        pass
+    def __init__(self, name, data_type, width=None):
+        """
+        
+        :param name: the field's name
+        :type name:  ``str``
+        :param data_type: the field's data type
+        :type data_type:  :py:class:`DataType`
+        :param width: the field's width
+        :type width:  ``int``
+        """
+        self._name = name
+        self._data_type = data_type
+        self._width = width
+
+    @property
+    def name(self):
+        """
+        This is the field's name.
+        
+        :return: the field's name
+        :rtype:  ``str``
+        """
+        return self._name
+
+    @property
+    def data_type(self):
+        """
+        This is the field's data type.
+        
+        :return: the field's data type
+        :rtype:  :py:class:`DataType`
+        """
+        return self._data_type
+
+    @property
+    def width(self):
+        """
+        This is the field's width.
+        
+        :return: the field's width
+        :rtype:  ``str``
+        """
+        return self._width
 
 
 class Revision(object):
     """
-    A "revision" contains version information about a model
+    A "revision" contains version information about when a model was defined.
     """
     def __init__(self, title, sequence, author_name, author_email):
         """
@@ -91,7 +145,7 @@ class Revision(object):
             try:
                 self._sequence = float(sequence) if '.' in sequence else int(sequence)
             except TypeError as te:
-                raise ValueError('sequence must be a number or a convertible string.')
+                raise TypeError('sequence must be a number or a convertible string.') from te
         self._author_name = author_name
         self._author_email = author_email
 
@@ -145,6 +199,10 @@ class Revision(object):
     #                     author_email=json_obj['authorEmail'])
 
 
+class _Relation(object):
+    pass
+
+
 class _Relations(object):
     """
     This is the subclass for collections of information that define the relations (tables) in a :py:class:`Model`.
@@ -152,22 +210,64 @@ class _Relations(object):
     def __init__(self, common_fields, relations):
         """
         
-        :param common_fields: 
-        :type common_fields:  ``list`` of
-        :param relations: 
+        :param common_fields: the common fields shared among relations in this collection
+        :type common_fields:  ``list`` of :py:class:`Field`
+        :param relations: the relations in this collection
+        :type relations:  :py:class:_Relation
         """
-        # If the common_fields variable is a list (as we expect)...
-        if isinstance(common_fields, list):
+        # If we didn't get any common fields...
+        if common_fields is None:
+            self._common_fields = {}  # ...our internal index is empty.
+        elif isinstance(common_fields, list):  # If we got the type we expect...
             # ...create an index for the fields that uses the field name as a key.
-            self._common_fields = {str(field.name).upper(): field for field in common_fields}
+            self._common_fields = CaseInsensitiveDict({str(field.name): field for field in common_fields})
         else:
             raise ValueError('common_fields must be a list.')
-        # If the tables variable is a list (as we expect)...
-        if isinstance(relations, list):
+        # If we didn't get any relations...
+        if relations is None:
+            self._relations = {}  # ...our internal index is empty.
+        elif isinstance(relations, list):  # If we got the type we expect...
             # ...create an index for the fields that uses the table's name as a key.
-                self._common_fields = {str(field.name).upper(): field for field in common_fields}
+                self._relations = CaseInsensitiveDict({str(field.name): field for field in relations})
         else:
             raise ValueError('relations must be a list.')
+
+    def __iter__(self):
+        # Return the values in the _relations index.
+        return iter(self._relations.values())
+
+    def get_common_field(self, name):
+        """
+        Get a common field from the collection.
+        
+        :param name: the field name
+        :type name:  ``str``
+        :return: the field
+        :rtype:  :py:class:`Field`
+        """
+        if name is None:
+            raise TypeError("name cannot be None.")
+        elif name not in self._common_fields:
+            raise KeyError("Common field '{name)' is not defined.".format(name=name))
+        else:
+            return self._relations[name]
+
+    def get_relation(self, name):
+        """
+        Get a relation from the collection.
+
+        :param name: the relation's name
+        :type name:  ``str``
+        :return: the relation
+        :rtype:  :py:class:`_Relation`
+        """
+        if name is None:
+            raise TypeError("name cannot be None.")
+        elif name not in self._common_fields:
+            raise KeyError("Relation '{name)' is not defined.".format(name=name))
+        else:
+            return self._relations[name]
+
 
 
 class SpatialRelations(_Relations):
