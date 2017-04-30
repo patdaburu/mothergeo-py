@@ -5,7 +5,7 @@
 .. currentmodule:: mothergeo.codetools
 .. moduleauthor:: Pat Daburu <pat@daburu.net>
 
-Helpful utilities from Mother.
+Helpful utilities from mother.
 """
 
 from enum import Enum
@@ -21,7 +21,7 @@ class Enums(object):
     @staticmethod
     def from_name(enum_cls, name):
         """
-        Get an enumeration member using its name.
+        Get an enumeration member value from its name.
         
         :param enum_cls: the :py:class:`Enum` ``class``
         :type enum_cls:  ``class``

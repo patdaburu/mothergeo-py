@@ -17,6 +17,16 @@ mothergeo
     :show-inheritance:
     :synopsis: GIS that cares.
 
+-------------------
+mothergeo.codetools
+-------------------
+.. automodule:: mothergeo.codetools
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+    :synopsis: Helpful tools from mother.
+
 ----------------------
 mothergeo.formats.data
 ----------------------
