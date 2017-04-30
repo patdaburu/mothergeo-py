@@ -15,7 +15,7 @@ mothergeo
     :undoc-members:
     :inherited-members:
     :show-inheritance:
-    :synopsis: Synopisis of the main module...
+    :synopsis: GIS that cares.
 
 ----------------------
 mothergeo.formats.data
@@ -25,4 +25,14 @@ mothergeo.formats.data
     :undoc-members:
     :inherited-members:
     :show-inheritance:
-    :synopsis: mothergeo data formats.
+    :synopsis: The shape data takes.
+
+------------------
+mothergeo.geometry
+------------------
+.. automodule:: mothergeo.geometry
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+    :synopsis: General geometry.

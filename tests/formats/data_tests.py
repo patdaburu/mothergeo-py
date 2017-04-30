@@ -1,5 +1,5 @@
 import unittest
-from mothergeo.formats.data import Revision, SpatialRelations, Model, JsonModelParser
+from mothergeo.formats.data import Revision, SpatialRelationsCollection, ModelInfo, JsonModelInfoParser
 
 
 class TestRevision(unittest.TestCase):

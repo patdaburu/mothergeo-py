@@ -5,9 +5,10 @@
 .. currentmodule:: mothergeo.formats.data
 .. moduleauthor:: Pat Daburu <pat@daburu.net>
 
-mothergeo data formats.
+The shape data takes.
 """
 
+from mothergeo.geometry import DEFAULT_SRID, GeometryType
 from insensitive_dict import CaseInsensitiveDict
 import json
 import numbers
@@ -39,11 +40,12 @@ class DataType(Enum):
     """
     These are the supported data types.
     """
-    UNKNOWN = 0  #: The data type is unknown.
-    TEXT = 1     #: This is character data.
-    UUID = 2     #: This is a universally unique identifier.
-    INT = 3      #: This is an integer.
-    FLOAT = 4    #: This is a floating-point number.
+    UNKNOWN = 'UNKNOWN'    #: The data type is unknown.
+    TEXT = 'TEXT'          #: This is character data.
+    UUID = 'UUID'          #: This is a universally unique identifier.
+    INT = 'INT'            #: This is an integer.
+    FLOAT = 'FLOAT'        #: This is a floating-point number.
+    DATETIME = 'DATETIME'  #: This is a moment in time.
 
 
 class Requirement(Enum):
@@ -51,9 +53,9 @@ class Requirement(Enum):
     How important is it that data be provided?  For example, a data field that is ``REQUESTED`` is a field for which we
     may ask, but a field that is ``REQUIRED`` *must* have data in it it.
     """
-    NONE = 0       #: There is no requirement for this data to be present.
-    REQUESTED = 1  #: We would like the data to be present.
-    REQUIRED = 2   #: The data *must* be present.
+    NONE = 'NONE'            #: There is no requirement for this data to be present.
+    REQUESTED = 'REQUESTED'  #: We would like the data to be present.
+    REQUIRED = 'REQUIRED'    #: The data *must* be present.
 
 
 class Source(object):
@@ -74,7 +76,7 @@ class Source(object):
         return self._requirement
 
 
-class Field(object):
+class FieldInfo(object):
     """
     This class describes a field in a relation (like a table, or a feature class).
     """
@@ -136,16 +138,22 @@ class Revision(object):
         :param author_name: 
         :param author_email: 
         """
+        # Grab the title before we do a little more leg work...
         self._title = title
+        # If the sequence parameter is None...
         if sequence is None:
+            # ...let's just start at zero.
             self._sequence = 0
-        elif isinstance(sequence, numbers.Number):
+        elif isinstance(sequence, numbers.Number):  # If they gave us an actual number...
+            # ...great!
             self._sequence = sequence
-        elif isinstance(sequence, str):
+        elif isinstance(sequence, str):  # But maybe they gave us a string, in which case...
+            # ...we need to try to convert it to a number.
             try:
                 self._sequence = float(sequence) if '.' in sequence else int(sequence)
             except TypeError as te:
                 raise TypeError('sequence must be a number or a convertible string.') from te
+        # Now let's get the other, simpler, properties.
         self._author_name = author_name
         self._author_email = author_email
 
@@ -199,28 +207,103 @@ class Revision(object):
     #                     author_email=json_obj['authorEmail'])
 
 
-class _Relation(object):
-    pass
-
-
-class _Relations(object):
+class _RelationInfo(object):
     """
-    This is the subclass for collections of information that define the relations (tables) in a :py:class:`Model`.
+    This is s a base class for classes that represent relations like tables or feature tables.
+    """
+    def __init__(self, name, fields=None):
+        """
+        
+        :param name: the name of the relation
+        :type name:  ``str``
+        :param fields: 
+        :type fields:  ``list`` of :py:class:`FieldInfo`
+        """
+        self._name = name
+        # If we didn't get any fields...
+        if fields is None:
+            self._fields = {}  # ...our internal index is empty.
+        elif isinstance(fields, list):  # If we got the type we expect...
+            # ...create an index for the fields that uses the field name as a key.
+            self._fields = CaseInsensitiveDict({str(field.name): field for field in fields})
+        else:
+            raise ValueError('common_fields must be a list.')
+
+    @property
+    def name(self):
+        """
+        Get the name of the relation.
+        
+        :return: the name of the relation
+        :rtype:  ``str``
+        """
+        return self._name
+
+    def get_field(self, name):
+        """
+        Get field information for the relation.
+        
+        :param name: the name of the relation
+        :type name:  ``str``
+        :return: the name of the relation
+        :rtype:  :py:class:`FieldInfo`
+        """
+        return self._fields[name]
+
+
+class FeatureTableInfo(_RelationInfo):
+    """
+    This class describes a feature table (*a.k.a* a "feature class").
+    """
+    def __init__(self, name, geometry_type, fields, srid=None):
+        """
+
+        :param name: the name of the relation
+        :type name:  ``str``
+        :param geometry_type: the type of geometry stored in the feature table
+        :type geometry_type:  :py:class:`GeometryType`
+        :param fields: 
+        :type fields:  ``list`` of :py:class:`FieldInfo`
+        
+        """
+        super().__init__(self, name, fields)
+        self._geometry_type = geometry_type
+        self._srid = int(srid) if srid is not None else None
+
+    @property
+    def geometry_type(self):
+        """
+        Get the geometry type.
+        
+        :return: the geometry type 
+        :rtype:  :py:class:`mothergeo.geometry.GeometryType`
+        """
+
+    @property
+    def srid(self):
+        # If this feature table doesn't have its own SRID, use mother's default.
+        return self._srid if self._srid is not None else DEFAULT_SRID
+
+
+class _RelationsCollection(object):
+    """
+    This is a base class for collections of information that define the relations (tables) in a 
+    :py:class:`ModelInfo`.
     """
     def __init__(self, common_fields, relations):
         """
         
         :param common_fields: the common fields shared among relations in this collection
-        :type common_fields:  ``list`` of :py:class:`Field`
+        :type common_fields:  ``list`` of :py:class:`FieldInfo`
         :param relations: the relations in this collection
-        :type relations:  :py:class:_Relation
+        :type relations:  :py:class:_RelationInfo
         """
         # If we didn't get any common fields...
         if common_fields is None:
             self._common_fields = {}  # ...our internal index is empty.
         elif isinstance(common_fields, list):  # If we got the type we expect...
             # ...create an index for the fields that uses the field name as a key.
-            self._common_fields = CaseInsensitiveDict({str(field.name): field for field in common_fields})
+            self._common_fields = CaseInsensitiveDict({field.name: field for field in common_fields})
         else:
             raise ValueError('common_fields must be a list.')
         # If we didn't get any relations...
@@ -228,7 +311,7 @@ class _Relations(object):
             self._relations = {}  # ...our internal index is empty.
         elif isinstance(relations, list):  # If we got the type we expect...
             # ...create an index for the fields that uses the table's name as a key.
-                self._relations = CaseInsensitiveDict({str(field.name): field for field in relations})
+                self._relations = CaseInsensitiveDict({field.name: field for field in relations})
         else:
             raise ValueError('relations must be a list.')
 
@@ -243,7 +326,7 @@ class _Relations(object):
         :param name: the field name
         :type name:  ``str``
         :return: the field
-        :rtype:  :py:class:`Field`
+        :rtype:  :py:class:`FieldInfo`
         """
         if name is None:
             raise TypeError("name cannot be None.")
@@ -259,7 +342,7 @@ class _Relations(object):
         :param name: the relation's name
         :type name:  ``str``
         :return: the relation
-        :rtype:  :py:class:`_Relation`
+        :rtype:  :py:class:`_RelationInfo`
         """
         if name is None:
             raise TypeError("name cannot be None.")
@@ -269,18 +352,27 @@ class _Relations(object):
             return self._relations[name]
 
 
-
-class SpatialRelations(_Relations):
-    def __init__(self, common_srid, common_fields, relations):
+class SpatialRelationsCollection(_RelationsCollection):
+    """
+    This is a base class for collections of feature tables.
+    """
+    def __init__(self, common_fields, relations, common_srid=None):
         super().__init__(common_fields=common_fields, relations=relations)
         self._common_srid = common_srid
 
     @property
     def common_srid(self):
-        return self._common_srid
+        """
+        Get the common spatial reference ID (SRID) shared by the relations.
+        
+        :return: the common SRID
+        :rtype:  ``int``
+        """
+        # If the collection doesn't specify its own common SRID, use mother's default.
+        return self._common_srid if self._common_srid is not None else DEFAULT_SRID
 
 
-class Model(object):
+class ModelInfo(object):
     """
     Instances of this class describe a data model.
     """
@@ -315,7 +407,7 @@ class Model(object):
         Get the model's spatial relation information.
         
         :return: the model's spatial relation information
-        :rtype:  :py:class:`SpatialRelations`
+        :rtype:  :py:class:`SpatialRelationsCollection`
         """
         return self._spatial_relations.values()
 
@@ -342,9 +434,10 @@ class ParseException(Exception):
         super().__init__(message)
 
 
-class ModelParser(object):
+class ModelInfoParser(object):
     """
-    This is an abstract base class that can be extended to convert between strings and :py:class:`Model` objects.
+    This is an abstract base class that can be extended to convert between strings and :py:class:`ModelInfo` 
+    objects.
     """
     def parse(self, s):
         """
@@ -353,17 +446,17 @@ class ModelParser(object):
         :param s: the JSON string you want to parse, or the path to a file containing the JSON
         :type s:  ``str``
         :return: the :py:class:`Model`
-        :rtype:  :py:class:`Model`
+        :rtype:  :py:class:`ModelInfo`
         :except: :py:exc:`NotImplementedError`
         """
         raise NotImplementedError('The subclass must override this method.')
 
     # def format(self, model):
     #     """
-    #     Override this method in a subclass to format a :py:class:`Model` as a JSON string.
+    #     Override this method in a subclass to format a :py:class:`ModelInfo` as a JSON string.
     #
     #     :param model: the JSON string you want to parse, or the path to a file containing the JSON
-    #     :type model:  :py:class:`Model`
+    #     :type model:  :py:class:`ModelInfo`
     #     :return: the JSON string
     #     :rtype:  ``str``
     #     :except: :py:exc:`NotImplementedError`
@@ -371,9 +464,9 @@ class ModelParser(object):
     #     raise NotImplementedError('The subclass must override this method.')
 
 
-class JsonModelParser(ModelParser):
+class JsonModelInfoParser(ModelInfoParser):
     """
-    This class converts between JSON and :py:class:`Model` objects.
+    This class converts between JSON and :py:class:`ModelInfo` objects.
     """
     def __init__(self):
         super().__init__()
@@ -386,7 +479,7 @@ class JsonModelParser(ModelParser):
         :param s: the JSON string you want to parse, or the path to a file containing the JSON
         :type s:  str
         :return: the :py:class:`Model`
-        :rtype:  :py:class:`Model`
+        :rtype:  :py:class:`ModelInfo`
         :raises: :py:class:`ParseException` if we can't parse the input.
         """
         parsed = None  # We're going to try a couple of ways to parse the JSON.
@@ -400,9 +493,9 @@ class JsonModelParser(ModelParser):
                 parsed = json.load(json_file)
         # Let's pull the stuff we want out of the JSON object, like...
         name = parsed['name']  # ...the name of the model, and...
-        revision = JsonModelParser._revision_from_json(parsed['revision'])  # ...the version (revision), and...
-        spatial = JsonModelParser._spatial_relations_from_json(parsed['spatial'])  # ...the spatial relations.
-        model = Model(name=name, revision=revision, spatial_relations=spatial)
+        revision = JsonModelInfoParser._revision_from_json(parsed['revision'])  # ...the version (revision), and...
+        spatial = JsonModelInfoParser._spatial_relations_from_json(parsed['spatial'])  # ...the spatial relations.
+        model = ModelInfo(name=name, revision=revision, spatial_relations=spatial)
         return model
 
     # def format(self, model):
