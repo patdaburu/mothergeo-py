@@ -8,15 +8,23 @@
 Helpful utilities from mother.
 """
 
+from collections import namedtuple
 from enum import Enum
 from insensitive_dict import CaseInsensitiveDict
+
+
+class TryGetResult(namedtuple('TryResult', ['result', 'value'])):
+    """
+    This is a named tuple that contains a ``bool`` result that indicates success or failure of a "try-get" operation,
+    and the value retrieved.
+    """
 
 
 class Enums(object):
     """
     This is a utility class that wants to help you work with :py:class:`Enum` types.
     """
-    _names2members = {}  # An index of enumeration member values indexed first by class, then by member name.
+    _names2members = {}  #: An index of enumeration member values indexed first by class, then by member name.
 
     @staticmethod
     def from_name(enum_cls, name):
@@ -50,5 +58,32 @@ class Enums(object):
             Enums._names2members[enum_cls] = symbols2members
         # Return the enumeration member indexed to the symbol that was passed in.
         return symbols2members[name]
+
+
+class Dicts(object):
+    """
+    This is a utility class that wants to help you work with ``dict`` types.
+    """
+    @staticmethod
+    def try_get(obj, key, default=None):
+        """
+        Try to retrieve a value from a :py:class:`dict` that may, or may not be present.
+        
+        :param obj: the object that defines the value
+        :type obj:  ``dict``
+        :param key: the key whose value you want
+        :type key:  ``str``
+        :param default: the value that will be returned if no value is defined for the key
+        :return: a named tuple that indicates whether or not the key was defined, and the value
+        :rtype:  :py:class:`TryGetResult`
+        """
+        if obj is None:  # Sanity check.
+            return TryGetResult(False, default)
+        elif key in obj:  # If the key is defined...
+            # ...just return the value.
+            return TryGetResult(True, obj[key])
+        else:  # We didn't find the key, eh?...
+            # ...return the default value to the caller.
+            return TryGetResult(False, default)
 
 

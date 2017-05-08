@@ -10,7 +10,7 @@ General geometry.
 
 from enum import Enum
 
-DEFAULT_SRID = 3857
+DEFAULT_SRID = 3857  #: The default spatial reference ID (SRID)
 
 
 class GeometryType(Enum):

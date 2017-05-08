@@ -27,10 +27,20 @@ mothergeo.codetools
     :show-inheritance:
     :synopsis: Helpful tools from mother.
 
-----------------------
-mothergeo.formats.data
-----------------------
-.. automodule:: mothergeo.formats.data
+--------------------------
+mothergeo.schemas.modeling
+--------------------------
+.. automodule:: mothergeo.schemas.modeling
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+    :synopsis: The shape data takes.
+
+-------------------------
+mothergeo.schemas.parsing
+-------------------------
+.. automodule:: mothergeo.schemas.parsing
     :members:
     :undoc-members:
     :inherited-members:

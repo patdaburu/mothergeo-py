@@ -31,6 +31,6 @@ How To...
 .. toctree::
    :glob:
    :maxdepth: 2
-   :caption: Helpful Guidance for the Curious and Confused:
+   :caption: Helpful Guidance for the Curious and Confused
 
    development/*

@@ -1,5 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import unittest
-from mothergeo.formats.data import Revision, SpatialRelationsCollection, ModelInfo, JsonModelInfoParser
+from mothergeo.schemas.modeling import Revision
 
 
 class TestRevision(unittest.TestCase):
