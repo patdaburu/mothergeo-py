@@ -27,6 +27,16 @@ mothergeo.codetools
     :show-inheritance:
     :synopsis: Helpful tools from mother.
 
+--------------
+mothergeo.i18n
+--------------
+.. automodule:: mothergeo.i18n
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+    :synopsis: Think locally, act globally.  These are tools to help with internationalization.
+
 --------------------------
 mothergeo.schemas.modeling
 --------------------------
