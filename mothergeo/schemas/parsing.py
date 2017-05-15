@@ -11,6 +11,7 @@ Provide a brief description of the module.
 from .modeling import FieldInfo, ModelInfo, Revision, SpatialRelationsCollection
 from ..codetools import Dicts
 from ..geometry import DEFAULT_SRID
+from ..i18n import I18nPack
 from functools import wraps
 import json
 
@@ -174,4 +175,13 @@ class JsonModelInfoParser(ModelInfoParser):
 
     @staticmethod
     def _json_2_i18n(jsobj):
-        pass
+        # Get the default translations.
+        defaults = jsobj['default'] if 'default' in jsobj else {}
+        # Construct the pack.
+        pack = I18nPack(defaults)
+        # Get the other (non-default) translation sets.
+        for locale in [key for key in filter(lambda key: key != 'default', jsobj.keys())]:
+            pack.set_translations(translations=jsobj[locale], locale=locale)
+        # That should be all.
+        return pack
+

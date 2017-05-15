@@ -29,17 +29,14 @@ class I18nPack(UserDict):
     
     .. seealso:: :py:func:`I18nPack.add_translation`
     """
-    def __init__(self, initialdata=None, locale=None):
+    def __init__(self, initialdata=None):
         """
 
         :param initialdata: a dictionary you can use to seed this package
         :type initialdata:  ``dict``
-        :param locale: the locale in which the values in this package can be understood
-        :type locale:  ``str``
         """
         super().__init__(initialdata if initialdata is not None else {})
-        self._translations = {}  #: This is a dictionary of locale's to translation packs.
-        self._locale = locale  #: The locale to which these values are appropriate.
+        self.__translations = {}  #: This is a dictionary of locale's to translation packs.
 
     def add_translation(self, key, translation, locale=None):
         """
@@ -56,21 +53,43 @@ class I18nPack(UserDict):
         if locale is None:
             # ...we're using the default.
             pack = self
-        elif locale in self._translations:  # A locale was specified, and we have a pack for it, so...
+        elif locale in self.__translations:  # A locale was specified, and we have a pack for it, so...
             # ...we're going to be using it.
-            pack = self._translations[locale]
+            pack = self.__translations[locale]
         else:  # This is our first encounter with this pack, so...
             # ...create a new one.
-            pack = I18nPack(locale=locale)
+            pack = I18nPack()
             # Now add it to the collection of translations.
-            self._translations[locale] = pack
+            self.__translations[locale] = pack
         # Now that we have a pack to update, let's do so.
         pack[key] = translation
 
+    def set_translations(self, translations, locale=None):
+        """
+        Update the pack with a complete set of translations.
+        
+        :param translations: the translations for the specified locale
+        :type translations:  ``dict[str, str]``
+        :param locale: the locale in which the translations would be understood (or ``None`` to set the defaults)
+        :type locale:  ``str``
+        :raises ValueError: if translations is not a ``dict``
+        """
+        # Make sure we're getting a dictionary of translations with which we can work.
+        if not isinstance(translations, dict):
+            raise ValueError('{arg} must be of type {type}'.format(arg='translations', type=dict))
+        # If no no locale is specified (or if the caller is explicitly telling us to set the defaults)...
+        if locale is None or locale == 'default':
+            # ...we're changing the values in the dictionary.
+            self.clear()
+            for key in translations.keys():
+                self[key] = translations[key]
+        else:  # Otherwise, insert (or swap) the previous dictionary.
+            self.__translations[locale] = I18nPack(translations)
+
     def __getattr__(self, name):
         # Let's figure out which pack we're supposed to be looking in.
-        pack = self._translations[current_locale] \
-            if current_locale is not None and current_locale in self._translations \
+        pack = self.__translations[current_locale] \
+            if current_locale is not None and current_locale in self.__translations \
             else self
         # If the name is defined in the pack...
         if name in pack:

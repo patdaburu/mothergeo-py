@@ -53,6 +53,44 @@ class TestI18nPack(unittest.TestCase):
         self.assertEqual(pack.beta, 'banana')
         self.assertEqual(pack.gamma, 'grapes')
 
+    def test_set_translations_without_locale(self):
+        pack = I18nPack()
+        pack.set_translations(translations={
+            'alpha': 'apple',
+            'beta': 'banana',
+            'gamma': 'grapes'
+        })
+        self.assertEqual(pack.alpha, 'apple')
+        self.assertEqual(pack.beta, 'banana')
+        self.assertEqual(pack.gamma, 'grapes')
+
+    def test_set_translations_with_locale(self):
+        pack = I18nPack()
+        # Set the default translations.
+        pack.set_translations(translations={
+            'alpha': 'apple',
+            'beta': 'banana',
+            'gamma': 'grapes'
+        }, locale='default')  # For this test, we'll cover the branch that checks specifically for locale='default'.
+        # Set the translations for a specific locale.
+        pack.set_translations(translations={
+            'alpha': '林檎',
+            'beta': 'バナナ'
+        }, locale='ja_jp')
+        mothergeo.i18n.current_locale = 'ja_jp'
+        try:
+            self.assertEqual(pack.alpha, '林檎')
+            self.assertEqual(pack.beta, 'バナナ')
+            self.assertEqual(pack.gamma, 'grapes')
+        finally:
+            mothergeo.i18n.current_locale = None
+        self.assertEqual(pack.alpha, 'apple')
+        self.assertEqual(pack.beta, 'banana')
+        self.assertEqual(pack.gamma, 'grapes')
+
+if __name__ == '__main__':
+    unittest.main()
+
 
 
 
