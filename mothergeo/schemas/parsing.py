@@ -8,7 +8,7 @@
 Provide a brief description of the module.
 """
 
-from .modeling import FieldInfo, ModelInfo, Revision, SpatialRelationsCollection
+from .modeling import FieldInfo, ModelInfo, Revision, Source, SpatialRelationsCollection
 from ..codetools import Dicts
 from ..geometry import DEFAULT_SRID
 from ..i18n import I18nPack
@@ -159,7 +159,8 @@ class JsonModelInfoParser(ModelInfoParser):
 
     @staticmethod
     def _json_2_source(jsobj):
-        pass
+        source = Source(jsobj['requirement'] if 'requirement' in jsobj else None)
+        return source
 
     @staticmethod
     def _json_2_target(jsobj):

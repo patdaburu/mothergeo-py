@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from mothergeo.schemas.modeling import Revision
+from mothergeo.schemas.modeling import Requirement, Revision, Source
 
 
 class TestRevision(unittest.TestCase):
@@ -43,6 +43,18 @@ class TestRevision(unittest.TestCase):
                      sequence='BAD VALUE',
                      author_name='Eric Blair',
                      author_email='eb1984@gmail.com')
+
+
+class TestSource(unittest.TestCase):
+
+    def test_init_requirement_is_str(self):
+        source = Source('required')
+        self.assertEqual(Requirement.REQUIRED, source.requirement)
+
+    def test_init_requirement_is_requirement(self):
+        source = Source(Requirement.REQUESTED)
+        self.assertEqual(Requirement.REQUESTED, source.requirement)
+
 
 if __name__ == '__main__':
     unittest.main()

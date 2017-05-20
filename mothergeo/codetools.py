@@ -38,6 +38,10 @@ class Enums(object):
         :return: the enumeration member
         :rtype:  :py:class:`Enum`
         """
+        # Benign forgiveness:  If we were actually passed a value from the enumeration instead of its name...
+        if isinstance(name, enum_cls):
+            # ...that's OK.  Just return the enumeration value.
+            return name
         # Make sure we're dealing with an Enum type.
         if not issubclass(enum_cls, Enum):
             raise ValueError('enum_class must be of type {typ}'.format(typ=type(Enum)))

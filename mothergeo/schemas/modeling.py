@@ -8,6 +8,7 @@
 The shape data takes.
 """
 
+from ..codetools import Enums
 from mothergeo.geometry import DEFAULT_SRID, GeometryType
 from insensitive_dict import CaseInsensitiveDict
 
@@ -41,8 +42,14 @@ class Source(object):
     """
     This object provides information about our expectations regarding the source from which data comes.
     """
+
     def __init__(self, requirement):
-        self._requirement = requirement
+        """
+        :param requirement: the requirement placed upon the source
+        :type requirement:  :py:class:`Requirement` or ``str``
+        :seealso: :py:fund:`Source.requirement`
+        """
+        self._requirement = Enums.from_name(Requirement, requirement) if requirement is not None else None
 
     @property
     def requirement(self):
@@ -53,6 +60,76 @@ class Source(object):
         :rtype:   :py:class:`Requirement`
         """
         return self._requirement
+
+
+class Target(object):
+    """
+    This object describes the contract presented to the consumer of the target data.
+    """
+
+    def __init__(self, calculated=False, guaranteed=False):
+        """
+        
+        :param calculated: May this data be calculated? 
+        :type calculated:  ``bool``
+        :seealso: :py:func:`Target.guaranteed`
+        :param guaranteed: Is this data guaranteed to have a non-empty value?
+        :type calculated:  ``bool``
+        :seealso: :py:func:`Target.guaranteed`
+        """
+        self._calculated = calculated
+        self._guaranteed = guaranteed
+
+    @property
+    def calculated(self):
+        """
+        May this data be calculated?
+        
+        :rtype:  ``bool`` 
+        """
+        return self._calculated
+
+    @property
+    def guaranteed(self):
+        """
+        Is this data guaranteed to have a non-empty value?
+        
+        :rtype:  ``bool``
+        """
+        return self._guaranteed
+
+
+class Usage(object):
+
+    def __init__(self, search=False, display=False):
+        """ 
+        :param search: is this data intended to be used in searches?
+        :type search:  ``bool``
+        :seealso: :py:func:`Usage.search`
+        :param display: is this data intended to be displayed to humans?
+        :type display:  ``bool``
+        :seealso: :py:func:`Usage.display`
+        """
+        self._search = search
+        self._display = display
+
+    @property
+    def search(self):
+        """
+        Is this data intended to be used in searches?
+        
+        :rtype:  ``bool`` 
+        """
+        return self._search
+
+    @property
+    def display(self):
+        """
+        Is this data intended to be displayed to humans?
+        
+        :rtype:  ``bool``
+        """
+        return self._display
 
 
 class FieldInfo(object):
@@ -175,15 +252,6 @@ class Revision(object):
         :rtype:  ``str``
         """
         return self._author_email
-
-    # @staticmethod
-    # @try_parse
-    # def from_json(s):
-    #     json_obj = json.loads(s) if isinstance(s, str) else s
-    #     return Revision(title=json_obj['title'],
-    #                     sequence=json_obj['sequence'],
-    #                     author_name=json_obj['authorName'],
-    #                     author_email=json_obj['authorEmail'])
 
 
 class _RelationInfo(object):
