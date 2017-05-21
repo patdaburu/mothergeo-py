@@ -40,14 +40,14 @@ class Requirement(Enum):
 
 class Source(object):
     """
-    This object provides information about our expectations regarding the source from which data comes.
+    Source objects provide information about our expectations regarding the source from which data comes.
     """
 
     def __init__(self, requirement):
         """
         :param requirement: the requirement placed upon the source
         :type requirement:  :py:class:`Requirement` or ``str``
-        :seealso: :py:fund:`Source.requirement`
+        :seealso: :py:func:`Source.requirement`
         """
         self._requirement = Enums.from_name(Requirement, requirement) if requirement is not None else None
 
@@ -64,9 +64,8 @@ class Source(object):
 
 class Target(object):
     """
-    This object describes the contract presented to the consumer of the target data.
+    Source objects describe the contract presented to the consumer of the target data.
     """
-
     def __init__(self, calculated=False, guaranteed=False):
         """
         
@@ -100,7 +99,9 @@ class Target(object):
 
 
 class Usage(object):
-
+    """
+    Usage objects provide information about how data should be used.
+    """
     def __init__(self, search=False, display=False):
         """ 
         :param search: is this data intended to be used in searches?
@@ -132,30 +133,87 @@ class Usage(object):
         return self._display
 
 
+class NenaSpec(object):
+    """
+    NENA information objects describe how data relates to the `NENA standard <http://bit.ly/2qEGGgt>`_.
+    """
+    def __init__(self, analog=None, required=None):
+        """
+        :param analog: This is the name of the NENA analog for this data.
+        :type analog:  ``str``
+        :param required: Does the NENA standard indicate that this data is required?
+        :type required:  ``bool``
+        """
+        self._analog = analog
+        self._required = required
+
+    @property
+    def analog(self):
+        """
+        This is the name of the NENA analog for this data?
+        
+        :rtype: ``bool`` 
+        """
+        return self._analog
+
+    @property
+    def required(self):
+        """
+        Does the NENA standard indicate that this data is required?
+        
+        :rtype: ``bool``
+        """
+        return self._required
+
+
 class FieldInfo(object):
     """
     This class describes a field in a relation (like a table, or a feature class).
     """
-    def __init__(self, name, data_type, width=None):
-        """
-        
+    def __init__(self, name, data_type, source, target, i18n, width=None, usage=None, nena=None, domain=None):
+        """  
         :param name: the field's name
         :type name:  ``str``
+        :seealso: :py:func:`FieldInfo.name`
         :param data_type: the field's data type
-        :type data_type:  :py:class:`DataType`
+        :type data_type:  :py:class:`DataType` or ``str``
+        :seealso: :py:func:`FieldInfo.data_type`
+        :param source: information about the source from which this field's data comes
+        :type source:  :py:class:`Source`
+        :seealso: :py:func:`FieldInfo.source`
+        :param target: information about the target data contract
+        :type target:  :py:class:`Target`
+        :seealso: :py:func:`FieldInfo.target`
+        :param i18n: informative strings that describe the field in various languages
+        :type i18n:  :py:func:`FieldInfo.I18n`
+        :seealso: :py:func:`FieldInfo.i18n` 
         :param width: the field's width
         :type width:  ``int``
+        :seealso: :py:func:`FieldInfo.width`
+        :param usage: information about how the data in this field will be used
+        :type usage:  :py:class:`Usage`
+        :seealso: :py:func:`FieldInfo.usage`
+        :param nena: information about how this field relates to the NENA standard
+        :type nena:  :py:class:`NenaSpec`
+        :seealso: :py:func:`FieldInfo.NenaSpec`
+        :param domain: the set of legal values for the field
+        :type domain:  ``set`` or ``list``
         """
         self._name = name
-        self._data_type = data_type
+        self._data_type = Enums.from_name(DataType, data_type)
+        self._source = source
+        self._target = target
+        self._i18n = i18n
         self._width = width
+        self._usage = usage if usage is not None else Usage()
+        self._nena = nena if nena is not None else NenaSpec()
+        self._domain = set(domain) if domain is not None else None
 
     @property
     def name(self):
         """
         This is the field's name.
         
-        :return: the field's name
         :rtype:  ``str``
         """
         return self._name
@@ -164,11 +222,65 @@ class FieldInfo(object):
     def data_type(self):
         """
         This is the field's data type.
-        
-        :return: the field's data type
+
         :rtype:  :py:class:`DataType`
         """
         return self._data_type
+
+    @property
+    def source(self):
+        """
+        Information about the source from which the data in this field comes.
+        
+        :rtype: :py:class:`Source`
+        """
+        return self._source
+
+    @property
+    def target(self):
+        """
+        Information about the target data contract.
+        
+        :rtype:  :py:class:`Target` 
+        """
+        return self._target
+
+    @property
+    def i18n(self):
+        """
+        Informative strings that describe this field in various languages.
+        
+        :rtype: :py:class:`I18n` 
+        """
+        return self._i18n
+
+    @property
+    def usage(self):
+        """
+        Information about how this field is intended to be used.
+        
+        :rtype:  :py:class:`Usage` 
+        """
+        return self._usage
+
+    @property
+    def nena(self):
+        """
+        Information about how this field relates to the NENA specification.
+        
+        :rtype: :py:class:`NenaSpec`
+        """
+        return self._nena
+
+    @property
+    def domain(self):
+        """
+        The set of legal values for this field.
+        
+        :return: the set of legal values, or ``None`` if all values are acceptable
+        :rtype:  ``set`` 
+        """
+        return self._domain
 
     @property
     def width(self):

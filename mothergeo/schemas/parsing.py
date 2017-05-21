@@ -8,7 +8,7 @@
 Provide a brief description of the module.
 """
 
-from .modeling import FieldInfo, ModelInfo, Revision, Source, Target, SpatialRelationsCollection
+from .modeling import (FieldInfo, ModelInfo, NenaSpec, Revision, Source, Target, SpatialRelationsCollection, Usage)
 from ..codetools import Dicts
 from ..geometry import DEFAULT_SRID
 from ..i18n import I18nPack
@@ -16,9 +16,9 @@ from functools import wraps
 import json
 
 
-def try_parse(f):
+def throws_parse_exception(f):
     """
-    This is a decorator for "parse" methods that standardizes exceptions as :py:class:`ParseException` instances.
+    This is a decorator for parsing methods that standardizes exceptions as :py:class:`ParseException` instances.
 
     :param f: the decorated function
     :type f:  ``func``
@@ -100,7 +100,7 @@ class JsonModelInfoParser(ModelInfoParser):
     def __init__(self):
         super().__init__()
 
-    @try_parse
+    @throws_parse_exception
     def parse(self, s):
         """
         Parse a JSON string into a :py:class:`Model` object.
@@ -147,7 +147,7 @@ class JsonModelInfoParser(ModelInfoParser):
 
     @staticmethod
     def _json_2_spatial_relations(jsobj):
-        # Create a new object with an empty collection of relations.  (We'll fill them in later.)
+        # Create a new object with an empty collection of relations.
         common_fields = []
         relations = []
         # Now that we have the information we need, let's create the object.
@@ -155,8 +155,21 @@ class JsonModelInfoParser(ModelInfoParser):
             common_fields, relations, Dicts.try_get(jsobj, 'commonSrid', DEFAULT_SRID).value)
 
     @staticmethod
-    def _json_2_field(jsobj):
-        pass
+    @throws_parse_exception
+    def _json_2_field_info(jsobj):
+        name = jsobj['name']  # We absolutely require a name.
+        data_type = jsobj['type']  # We absolutely require a data type.
+        domain = Dicts.try_get(jsobj, 'domain', None).value
+        width = Dicts.try_get(jsobj, 'width', None).value
+        source = JsonModelInfoParser._json_2_source(jsobj['source'])
+        target = JsonModelInfoParser._json_2_target(jsobj['target'])
+        usage = JsonModelInfoParser._json_2_usage(Dicts.try_get(jsobj, 'usage', {}).value)
+        nena = JsonModelInfoParser._json_2_nena_spec(Dicts.try_get(jsobj, 'nena', {}).value)
+        i18n = JsonModelInfoParser._json_2_i18n(jsobj['i18n'])  # We absolutely require I18n information.
+        # Now that we have all our information, we can construct a FieldInfo object!
+        return FieldInfo(
+            name=name, data_type=data_type, source=source, target=target, i18n=i18n, width=width, usage=usage,
+            nena=nena, domain=domain)
 
     @staticmethod
     def _json_2_source(jsobj):
@@ -173,11 +186,17 @@ class JsonModelInfoParser(ModelInfoParser):
 
     @staticmethod
     def _json_2_usage(jsobj):
-        pass
+        search = Dicts.try_get(jsobj, 'search', False).value
+        display = Dicts.try_get(jsobj, 'display', False).value
+        usage = Usage(search=search, display=display)
+        return usage
 
     @staticmethod
-    def _json_2_nena(jsobj):
-        pass
+    def _json_2_nena_spec(jsobj):
+        analog = Dicts.try_get(jsobj, 'analog', None).value
+        required = Dicts.try_get(jsobj, 'required', False).value
+        nena_spec = NenaSpec(analog=analog, required=required)
+        return nena_spec
 
     @staticmethod
     def _json_2_i18n(jsobj):
