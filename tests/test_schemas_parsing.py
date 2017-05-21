@@ -123,7 +123,7 @@ class TestJsonModelInfoParser(unittest.TestCase):
         self.assertEqual("NENA_DEFINED_FIELD", nena_spec.analog)
         self.assertTrue(nena_spec.required)
 
-    def test_json_2_field_info(self):
+    def test_json_2_field_info_with_all_values(self):
         jsons = """
         {
             "name": "srcFullNam",
@@ -137,17 +137,17 @@ class TestJsonModelInfoParser(unittest.TestCase):
               "guaranteed": false
             },
             "usage": {
-              "search": false,
+              "search": true,
               "display": false
             },
             "nena": {
-              "analog": null,
-              "required": false
+              "analog": "TEST_NENA_ANALOG",
+              "required": true
             },
             "i18n": {
               "default": {
-                "friendlyName": "Source Full Name",
-                "description": "Source Full Name"
+                "friendlyName": "I18N_FRIENDLY",
+                "description": "I18N_DESC"
               },
               "ja_jp": {
                 "friendlyName": "プレースホルダ",
@@ -160,6 +160,17 @@ class TestJsonModelInfoParser(unittest.TestCase):
         field_info = JsonModelInfoParser._json_2_field_info(jsobj)
         self.assertEqual('srcFullNam', field_info.name)
         self.assertEqual(DataType.TEXT, field_info.data_type)
+        self.assertEqual(200, field_info.width)
+        self.assertEqual(Requirement.REQUIRED, field_info.source.requirement)
+        self.assertTrue(field_info.target.calculated)
+        self.assertFalse(field_info.target.guaranteed)
+        self.assertTrue(field_info.usage.search)
+        self.assertFalse(field_info.usage.display)
+        self.assertEqual('TEST_NENA_ANALOG', field_info.nena.analog)
+        self.assertTrue(field_info.nena.required)
+        self.assertEqual('I18N_FRIENDLY', field_info.i18n.friendlyName)
+        self.assertEqual('I18N_DESC', field_info.i18n.description)
+
 
 
 
