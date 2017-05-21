@@ -61,12 +61,29 @@ class TestJsonModelInfoParser(unittest.TestCase):
         self.assertEqual(Requirement.REQUIRED, source.requirement)
 
     def test_json_2_source_no_requirement(self):
-        jsons = """
-        {}
-        """
+        jsons = '{}'
         jsobj = json.loads(jsons)
         source = JsonModelInfoParser._json_2_source(jsobj)
         self.assertEqual(None, source.requirement)
+
+    def test_json_2_target_without_values(self):
+        jsons = '{}'
+        jsobj = json.loads(jsons)
+        target = JsonModelInfoParser._json_2_target(jsobj)
+        self.assertEqual(False, target.calculated)
+        self.assertEqual(False, target.guaranteed)
+
+    def test_json_2_target_with_values(self):
+        jsons = """
+        {
+          "calculated": true,
+          "guaranteed": true
+        }
+        """
+        jsobj = json.loads(jsons)
+        target = JsonModelInfoParser._json_2_target(jsobj)
+        self.assertEqual(True, target.calculated)
+        self.assertEqual(True, target.guaranteed)
 
 
 if __name__ == '__main__':

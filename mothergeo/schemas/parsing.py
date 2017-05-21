@@ -8,7 +8,7 @@
 Provide a brief description of the module.
 """
 
-from .modeling import FieldInfo, ModelInfo, Revision, Source, SpatialRelationsCollection
+from .modeling import FieldInfo, ModelInfo, Revision, Source, Target, SpatialRelationsCollection
 from ..codetools import Dicts
 from ..geometry import DEFAULT_SRID
 from ..i18n import I18nPack
@@ -151,7 +151,8 @@ class JsonModelInfoParser(ModelInfoParser):
         common_fields = []
         relations = []
         # Now that we have the information we need, let's create the object.
-        return SpatialRelationsCollection(common_fields, relations, Dicts.try_get(jsobj, 'commonSrid', DEFAULT_SRID))
+        return SpatialRelationsCollection(
+            common_fields, relations, Dicts.try_get(jsobj, 'commonSrid', DEFAULT_SRID).value)
 
     @staticmethod
     def _json_2_field(jsobj):
@@ -159,12 +160,16 @@ class JsonModelInfoParser(ModelInfoParser):
 
     @staticmethod
     def _json_2_source(jsobj):
-        source = Source(jsobj['requirement'] if 'requirement' in jsobj else None)
+        requirement = Dicts.try_get(jsobj, 'requirement', None).value
+        source = Source(requirement=requirement)
         return source
 
     @staticmethod
     def _json_2_target(jsobj):
-        pass
+        calculated = Dicts.try_get(jsobj, 'calculated', False).value
+        guaranteed = Dicts.try_get(jsobj, 'guaranteed', False).value
+        target = Target(calculated=calculated, guaranteed=guaranteed)
+        return target
 
     @staticmethod
     def _json_2_usage(jsobj):
