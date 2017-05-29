@@ -127,6 +127,7 @@ class TestJsonModelInfoParser(unittest.TestCase):
         jsons = """
         {
             "name": "srcFullNam",
+            "unique": true,
             "type": "text",
             "width": 200,
             "source": {
@@ -159,6 +160,7 @@ class TestJsonModelInfoParser(unittest.TestCase):
         jsobj = json.loads(jsons)
         field_info = JsonModelInfoParser._json_2_field_info(jsobj)
         self.assertEqual('srcFullNam', field_info.name)
+        self.assertEqual(True, field_info.unique)
         self.assertEqual(DataType.TEXT, field_info.data_type)
         self.assertEqual(200, field_info.width)
         self.assertEqual(Requirement.REQUIRED, field_info.source.requirement)
@@ -170,8 +172,6 @@ class TestJsonModelInfoParser(unittest.TestCase):
         self.assertTrue(field_info.nena.required)
         self.assertEqual('I18N_FRIENDLY', field_info.i18n.friendlyName)
         self.assertEqual('I18N_DESC', field_info.i18n.description)
-
-
 
 
 if __name__ == '__main__':

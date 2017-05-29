@@ -170,11 +170,12 @@ class FieldInfo(object):
     """
     This class describes a field in a relation (like a table, or a feature class).
     """
-    def __init__(self, name, data_type, source, target, i18n, width=None, usage=None, nena=None, domain=None):
+    def __init__(self, name, data_type, source, target, i18n,
+                 unique=False, width=None, usage=None, nena=None, domain=None):
         """  
         :param name: the field's name
         :type name:  ``str``
-        :seealso: :py:func:`FieldInfo.name`
+        :seealso: :py:func:`FieldInfo.name` 
         :param data_type: the field's data type
         :type data_type:  :py:class:`DataType` or ``str``
         :seealso: :py:func:`FieldInfo.data_type`
@@ -187,6 +188,9 @@ class FieldInfo(object):
         :param i18n: informative strings that describe the field in various languages
         :type i18n:  :py:func:`FieldInfo.I18n`
         :seealso: :py:func:`FieldInfo.i18n` 
+        :param unique: indicates whether or not values must be unique
+        :type unique: ``bool``
+        :seealso: :py:func:`FieldInfo.unique`
         :param width: the field's width
         :type width:  ``int``
         :seealso: :py:func:`FieldInfo.width`
@@ -200,6 +204,7 @@ class FieldInfo(object):
         :type domain:  ``set`` or ``list``
         """
         self._name = name
+        self._unique = unique
         self._data_type = Enums.from_name(DataType, data_type)
         self._source = source
         self._target = target
@@ -212,16 +217,25 @@ class FieldInfo(object):
     @property
     def name(self):
         """
-        This is the field's name.
+        Get the field's name.
         
         :rtype:  ``str``
         """
         return self._name
 
     @property
+    def unique(self):
+        """
+        This flag indicates whether or not the values in this field must be unique.
+        
+        :rtype: ``bool``
+        """
+        return self._unique
+
+    @property
     def data_type(self):
         """
-        This is the field's data type.
+        Get the field's data type.
 
         :rtype:  :py:class:`DataType`
         """
@@ -230,7 +244,7 @@ class FieldInfo(object):
     @property
     def source(self):
         """
-        Information about the source from which the data in this field comes.
+        Get information about the source from which the data in this field comes.
         
         :rtype: :py:class:`Source`
         """
@@ -239,7 +253,7 @@ class FieldInfo(object):
     @property
     def target(self):
         """
-        Information about the target data contract.
+        Get information about the target data contract.
         
         :rtype:  :py:class:`Target` 
         """
@@ -248,7 +262,7 @@ class FieldInfo(object):
     @property
     def i18n(self):
         """
-        Informative strings that describe this field in various languages.
+        Get informative strings that describe this field in various languages.
         
         :rtype: :py:class:`I18n` 
         """
@@ -257,7 +271,7 @@ class FieldInfo(object):
     @property
     def usage(self):
         """
-        Information about how this field is intended to be used.
+        Get information about how this field is intended to be used.
         
         :rtype:  :py:class:`Usage` 
         """
@@ -266,7 +280,7 @@ class FieldInfo(object):
     @property
     def nena(self):
         """
-        Information about how this field relates to the NENA specification.
+        Get information about how this field relates to the NENA specification.
         
         :rtype: :py:class:`NenaSpec`
         """
@@ -275,7 +289,7 @@ class FieldInfo(object):
     @property
     def domain(self):
         """
-        The set of legal values for this field.
+        Get the set of legal values for this field.
         
         :return: the set of legal values, or ``None`` if all values are acceptable
         :rtype:  ``set`` 
@@ -285,7 +299,7 @@ class FieldInfo(object):
     @property
     def width(self):
         """
-        This is the field's width.
+        Get the field's width.
         
         :return: the field's width
         :rtype:  ``str``
@@ -370,15 +384,19 @@ class _RelationInfo(object):
     """
     This is s a base class for classes that represent relations like tables or feature tables.
     """
-    def __init__(self, name, fields=None):
+    def __init__(self, name, identity=None, fields=None):
         """
         
         :param name: the name of the relation
         :type name:  ``str``
+        :param identity: the name of the field that contains the identity value for the relation
+        :type identity:  ``str``
+        :seealso: :py:func:`_RelationInfo.identity`
         :param fields: 
         :type fields:  ``list`` of :py:class:`FieldInfo`
         """
         self._name = name
+        self._identity = identity
         # If we didn't get any fields...
         if fields is None:
             self._fields = {}  # ...our internal index is empty.
@@ -393,10 +411,27 @@ class _RelationInfo(object):
         """
         Get the name of the relation.
         
-        :return: the name of the relation
         :rtype:  ``str``
         """
         return self._name
+
+    @property
+    def identity(self):
+        """
+        Get the name of the field that contains the identity values for the relation.
+        
+        :rtype:  ``str`` 
+        """
+        return self._identity
+    
+    def get_identity_field(self):
+        """
+        Get the field information for the field that contains the identity values for the relation.
+        
+        :seealso: :py:func:`FieldInfo.identity`
+        :rtype: :py:class:`FieldInfo`
+        """
+        return self.get_field(self._identity) if self._identity is not None else None
 
     def get_field(self, name):
         """
@@ -449,13 +484,16 @@ class _RelationsCollection(object):
     This is a base class for collections of information that define the relations (tables) in a 
     :py:class:`ModelInfo`.
     """
-    def __init__(self, common_fields, relations):
+    def __init__(self, common_fields, relations, default_identity):
         """
         
         :param common_fields: the common fields shared among relations in this collection
         :type common_fields:  ``list`` of :py:class:`FieldInfo`
         :param relations: the relations in this collection
-        :type relations:  :py:class:_RelationInfo
+        :type relations:  :py:class:`_RelationInfo`
+        :param default_identity: the name of the default identity field for all defined relations
+        :type default_identity:  ``str``
+        :seealso: :py:func:`_RelationsCollection.default_identity`
         """
         # If we didn't get any common fields...
         if common_fields is None:
@@ -473,10 +511,20 @@ class _RelationsCollection(object):
                 self._relations = CaseInsensitiveDict({field.name: field for field in relations})
         else:
             raise ValueError('relations must be a list.')
+        self._default_identity = default_identity
 
     def __iter__(self):
         # Return the values in the _relations index.
         return iter(self._relations.values())
+
+    @property
+    def default_identity(self):
+        """
+        Get the name of the default identity field for relations in this collection.
+        
+        :rtype:  ``str`` 
+        """
+        return self._defaultIdentity
 
     def get_common_field(self, name):
         """
@@ -531,7 +579,7 @@ class SpatialRelationsCollection(_RelationsCollection):
     """
     This is a base class for collections of feature tables.
     """
-    def __init__(self, common_fields, relations, common_srid=None):
+    def __init__(self, common_fields, relations, defaultIdentity, common_srid=None):
         super().__init__(common_fields=common_fields, relations=relations)
         self._common_srid = common_srid
 

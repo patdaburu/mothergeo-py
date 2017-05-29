@@ -27,6 +27,26 @@ mothergeo.codetools
     :show-inheritance:
     :synopsis: Helpful tools from mother.
 
+---------------------
+mothergeo.db.modeling
+---------------------
+.. automodule:: mothergeo.db.modeling
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+    :synopsis: General tools for working with data models in the database.
+
+-----------------------------
+mothergeo.db.postgis.modeling
+-----------------------------
+.. automodule:: mothergeo.db.postgis.modeling
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+    :synopsis: Tools for working with data models in PostGIS.
+
 --------------
 mothergeo.i18n
 --------------
