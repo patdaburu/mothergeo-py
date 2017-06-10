@@ -175,7 +175,8 @@ class JsonModelInfoParser(ModelInfoParser):
     @staticmethod
     def _json_2_source(jsobj):
         requirement = Dicts.try_get(jsobj, 'requirement', None).value
-        source = Source(requirement=requirement)
+        analogs = Dicts.try_get(jsobj, 'analogs', []).value
+        source = Source(requirement=requirement, analogs=analogs)
         return source
 
     @staticmethod

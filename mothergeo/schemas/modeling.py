@@ -43,13 +43,17 @@ class Source(object):
     Source objects provide information about our expectations regarding the source from which data comes.
     """
 
-    def __init__(self, requirement):
+    def __init__(self, requirement, analogs=None):
         """
         :param requirement: the requirement placed upon the source
         :type requirement:  :py:class:`Requirement` or ``str``
         :seealso: :py:func:`Source.requirement`
+        :param analogs:  a list of analogous field name patterns
+        :type analogs:  list(str) or None
+        :seealso: :py:func:`Source.analogs`
         """
         self._requirement = Enums.from_name(Requirement, requirement) if requirement is not None else None
+        self._analogs = analogs if type(analogs) is list else [analogs] if analogs is not None else []
 
     @property
     def requirement(self):
@@ -60,6 +64,16 @@ class Source(object):
         :rtype:   :py:class:`Requirement`
         """
         return self._requirement
+
+    @property
+    def analogs(self):
+        """
+        This is a list of common analogous field name patterns.
+        
+        :return: the analogous field name patterns
+        :rtype:  list(str)
+        """
+        return self._analogs
 
 
 class Target(object):

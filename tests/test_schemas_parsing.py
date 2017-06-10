@@ -131,7 +131,8 @@ class TestJsonModelInfoParser(unittest.TestCase):
             "type": "text",
             "width": 200,
             "source": {
-              "requirement" : "required"
+              "requirement" : "required",
+              "analogs" : [ "street_nam?", "strnam" ]
             },
             "target": {
               "calculated": true,
@@ -164,6 +165,9 @@ class TestJsonModelInfoParser(unittest.TestCase):
         self.assertEqual(DataType.TEXT, field_info.data_type)
         self.assertEqual(200, field_info.width)
         self.assertEqual(Requirement.REQUIRED, field_info.source.requirement)
+        self.assertEqual(2, len(field_info.source.analogs))
+        self.assertTrue('street_nam?' in field_info.source.analogs)
+        self.assertTrue('strnam' in field_info.source.analogs)
         self.assertTrue(field_info.target.calculated)
         self.assertFalse(field_info.target.guaranteed)
         self.assertTrue(field_info.usage.search)
