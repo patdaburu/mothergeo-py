@@ -124,7 +124,7 @@ class JsonModelInfoParser(ModelInfoParser):
         name = Dicts.try_get(parsed, 'name', 'Nameless Model')  # ...the name of the model, and...
         revision = JsonModelInfoParser._json_2_revision(parsed['revision'])  # ...the version (revision), and...
         spatial = JsonModelInfoParser._json_2_spatial_relations(parsed['spatial'])  # ...the spatial relations.
-        model = ModelInfo(name=name, revision=revision, spatial_relations=spatial)
+        model = ModelInfo(name=name, revision=revision, feature_tables=spatial)
         return model
 
     # def format(self, model):

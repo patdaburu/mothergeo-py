@@ -633,7 +633,7 @@ class ModelInfo(object):
     """
     Instances of this class describe a data model.
     """
-    def __init__(self, name: str, revision: Revision, spatial_relations: FeatureTableInfoCollection):
+    def __init__(self, name: str, revision: Revision, feature_tables: FeatureTableInfoCollection):
         """
         
         :param name: the model's name
@@ -642,13 +642,13 @@ class ModelInfo(object):
         :param revision: the model's revision information
         :type revision:  :py:class:`Revision`
         :seealso:  :py:func:`ModelInfo.revision`
-        :param spatial_relations: the feature table information
-        :type spatial_relations:  :py:class:`FeatureTableInfoCollection`
-        :seealso:  :py:func:`spatial_relations`
+        :param feature_tables: the feature table information
+        :type feature_tables:  :py:class:`FeatureTableInfoCollection`
+        :seealso:  :py:func:`feature_tables`
         """
         self._name = name
         self._revision = revision
-        self._spatial_relations = spatial_relations
+        self._feature_tables = feature_tables
 
     @property
     def name(self) ->  str:
@@ -671,14 +671,14 @@ class ModelInfo(object):
         return self._revision
 
     @property
-    def spatial_relations(self) -> FeatureTableInfoCollection:
+    def feature_tables(self) -> FeatureTableInfoCollection:
         """
         Get the model's spatial relation information.
         
         :return: the model's spatial relation information
         :rtype:  :py:class:`FeatureTableInfoCollection`
         """
-        return self._spatial_relations.values()
+        return self._feature_tables.values()
 
 
 
