@@ -8,7 +8,7 @@
 Provide a brief description of the module.
 """
 
-from .modeling import (FieldInfo, ModelInfo, NenaSpec, Revision, Source, Target, SpatialRelationsCollection, Usage)
+from .modeling import (FieldInfo, ModelInfo, NenaSpec, Revision, Source, Target, FeatureTableInfoCollection, Usage)
 from ..codetools import Dicts
 from ..geometry import DEFAULT_SRID
 from ..i18n import I18nPack
@@ -151,7 +151,7 @@ class JsonModelInfoParser(ModelInfoParser):
         common_fields = []
         relations = []
         # Now that we have the information we need, let's create the object.
-        return SpatialRelationsCollection(
+        return FeatureTableInfoCollection(
             common_fields, relations, Dicts.try_get(jsobj, 'commonSrid', DEFAULT_SRID).value)
 
     @staticmethod

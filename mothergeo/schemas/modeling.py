@@ -9,8 +9,10 @@ The shape data takes.
 """
 
 from ..codetools import Enums
+from ..i18n import I18nPack
 from mothergeo.geometry import DEFAULT_SRID, GeometryType
 from insensitive_dict import CaseInsensitiveDict
+from typing import List
 
 import numbers
 from enum import Enum
@@ -56,7 +58,7 @@ class Source(object):
         self._analogs = analogs if type(analogs) is list else [analogs] if analogs is not None else []
 
     @property
-    def requirement(self):
+    def requirement(self) -> Requirement:
         """
         Is this data required? or requested? or neither?
         
@@ -66,7 +68,7 @@ class Source(object):
         return self._requirement
 
     @property
-    def analogs(self):
+    def analogs(self) -> List[str]:
         """
         This is a list of common analogous field name patterns.
         
@@ -80,7 +82,7 @@ class Target(object):
     """
     Source objects describe the contract presented to the consumer of the target data.
     """
-    def __init__(self, calculated=False, guaranteed=False):
+    def __init__(self, calculated: bool=False, guaranteed: bool=False):
         """
         
         :param calculated: May this data be calculated? 
@@ -94,7 +96,7 @@ class Target(object):
         self._guaranteed = guaranteed
 
     @property
-    def calculated(self):
+    def calculated(self) -> bool:
         """
         May this data be calculated?
         
@@ -103,7 +105,7 @@ class Target(object):
         return self._calculated
 
     @property
-    def guaranteed(self):
+    def guaranteed(self) -> bool:
         """
         Is this data guaranteed to have a non-empty value?
         
@@ -116,7 +118,7 @@ class Usage(object):
     """
     Usage objects provide information about how data should be used.
     """
-    def __init__(self, search=False, display=False):
+    def __init__(self, search: bool=False, display: bool=False):
         """ 
         :param search: is this data intended to be used in searches?
         :type search:  ``bool``
@@ -129,7 +131,7 @@ class Usage(object):
         self._display = display
 
     @property
-    def search(self):
+    def search(self) -> bool:
         """
         Is this data intended to be used in searches?
         
@@ -138,7 +140,7 @@ class Usage(object):
         return self._search
 
     @property
-    def display(self):
+    def display(self) -> bool:
         """
         Is this data intended to be displayed to humans?
         
@@ -151,7 +153,7 @@ class NenaSpec(object):
     """
     NENA information objects describe how data relates to the `NENA standard <http://bit.ly/2qEGGgt>`_.
     """
-    def __init__(self, analog=None, required=None):
+    def __init__(self, analog: str=None, required: bool=None):
         """
         :param analog: This is the name of the NENA analog for this data.
         :type analog:  ``str``
@@ -162,7 +164,7 @@ class NenaSpec(object):
         self._required = required
 
     @property
-    def analog(self):
+    def analog(self) -> bool:
         """
         This is the name of the NENA analog for this data?
         
@@ -171,7 +173,7 @@ class NenaSpec(object):
         return self._analog
 
     @property
-    def required(self):
+    def required(self) -> bool:
         """
         Does the NENA standard indicate that this data is required?
         
@@ -184,8 +186,17 @@ class FieldInfo(object):
     """
     This class describes a field in a relation (like a table, or a feature class).
     """
-    def __init__(self, name, data_type, source, target, i18n,
-                 unique=False, width=None, usage=None, nena=None, domain=None):
+    def __init__(self,
+                 name: str,
+                 data_type: DataType or str,
+                 source: Source,
+                 target: Target,
+                 i18n: I18nPack,
+                 unique: bool=False,
+                 width: int or None=None,
+                 usage: Usage=None,
+                 nena: NenaSpec=None,
+                 domain: set or list=None):
         """  
         :param name: the field's name
         :type name:  ``str``
@@ -200,7 +211,7 @@ class FieldInfo(object):
         :type target:  :py:class:`Target`
         :seealso: :py:func:`FieldInfo.target`
         :param i18n: informative strings that describe the field in various languages
-        :type i18n:  :py:func:`FieldInfo.I18n`
+        :type i18n:  :py:func:`i18n.I18nPack`
         :seealso: :py:func:`FieldInfo.i18n` 
         :param unique: indicates whether or not values must be unique
         :type unique: ``bool``
@@ -229,7 +240,7 @@ class FieldInfo(object):
         self._domain = set(domain) if domain is not None else None
 
     @property
-    def name(self):
+    def name(self) -> str:
         """
         Get the field's name.
         
@@ -238,7 +249,7 @@ class FieldInfo(object):
         return self._name
 
     @property
-    def unique(self):
+    def unique(self) -> bool:
         """
         This flag indicates whether or not the values in this field must be unique.
         
@@ -247,7 +258,7 @@ class FieldInfo(object):
         return self._unique
 
     @property
-    def data_type(self):
+    def data_type(self) -> DataType:
         """
         Get the field's data type.
 
@@ -256,7 +267,7 @@ class FieldInfo(object):
         return self._data_type
 
     @property
-    def source(self):
+    def source(self) -> Source:
         """
         Get information about the source from which the data in this field comes.
         
@@ -265,7 +276,7 @@ class FieldInfo(object):
         return self._source
 
     @property
-    def target(self):
+    def target(self) -> Target:
         """
         Get information about the target data contract.
         
@@ -274,7 +285,7 @@ class FieldInfo(object):
         return self._target
 
     @property
-    def i18n(self):
+    def i18n(self) -> I18nPack:
         """
         Get informative strings that describe this field in various languages.
         
@@ -283,7 +294,7 @@ class FieldInfo(object):
         return self._i18n
 
     @property
-    def usage(self):
+    def usage(self) -> Usage:
         """
         Get information about how this field is intended to be used.
         
@@ -292,7 +303,7 @@ class FieldInfo(object):
         return self._usage
 
     @property
-    def nena(self):
+    def nena(self) -> NenaSpec:
         """
         Get information about how this field relates to the NENA specification.
         
@@ -301,7 +312,7 @@ class FieldInfo(object):
         return self._nena
 
     @property
-    def domain(self):
+    def domain(self) -> set:
         """
         Get the set of legal values for this field.
         
@@ -311,7 +322,7 @@ class FieldInfo(object):
         return self._domain
 
     @property
-    def width(self):
+    def width(self) -> int or None:
         """
         Get the field's width.
         
@@ -325,14 +336,17 @@ class Revision(object):
     """
     A "revision" contains version information about when a model was defined.
     """
-    def __init__(self, title, sequence, author_name, author_email):
+    def __init__(self, title: str, sequence: int or float, author_name: str, author_email: str):
         """
         
         :param title: the revision title
         :type title:  ``str``
-        :param sequence: 
-        :param author_name: 
-        :param author_email: 
+        :param sequence: an incrementing sequence number that may be used to order revisions sequentially
+        :type sequence: ``float``
+        :param author_name: the name of the format's author
+        :type author_name:  ``str``
+        :param author_email: the email address of the format's author
+        :type author_email:  ``str``
         """
         # Grab the title before we do a little more leg work...
         self._title = title
@@ -354,7 +368,7 @@ class Revision(object):
         self._author_email = author_email
 
     @property
-    def title(self):
+    def title(self) -> str:
         """
         Get the revision's title.
         
@@ -364,7 +378,7 @@ class Revision(object):
         return self._title
 
     @property
-    def sequence(self):
+    def sequence(self) -> int or float:
         """
         Get the revision's sequence number.
 
@@ -374,7 +388,7 @@ class Revision(object):
         return self._sequence
 
     @property
-    def author_name(self):
+    def author_name(self) -> str:
         """
         Get the name of the person who authored this revision.
         
@@ -384,7 +398,7 @@ class Revision(object):
         return self._author_name
 
     @property
-    def author_email(self):
+    def author_email(self) -> str:
         """
         Get the email address of the person who authored this revision.
         
@@ -396,9 +410,9 @@ class Revision(object):
 
 class _RelationInfo(object):
     """
-    This is s a base class for classes that represent relations like tables or feature tables.
+    This is a base class for classes that represent relations like tables or feature tables.
     """
-    def __init__(self, name, identity=None, fields=None):
+    def __init__(self, name: str, identity: str=None, fields: List[FieldInfo]=None):
         """
         
         :param name: the name of the relation
@@ -421,7 +435,7 @@ class _RelationInfo(object):
             raise ValueError('common_fields must be a list.')
 
     @property
-    def name(self):
+    def name(self) -> str:
         """
         Get the name of the relation.
         
@@ -430,7 +444,7 @@ class _RelationInfo(object):
         return self._name
 
     @property
-    def identity(self):
+    def identity(self) -> str:
         """
         Get the name of the field that contains the identity values for the relation.
         
@@ -438,7 +452,7 @@ class _RelationInfo(object):
         """
         return self._identity
     
-    def get_identity_field(self):
+    def get_identity_field(self) -> str:
         """
         Get the field information for the field that contains the identity values for the relation.
         
@@ -447,7 +461,7 @@ class _RelationInfo(object):
         """
         return self.get_field(self._identity) if self._identity is not None else None
 
-    def get_field(self, name):
+    def get_field(self, name: str) -> FieldInfo:
         """
         Get field information for the relation.
         
@@ -463,42 +477,48 @@ class FeatureTableInfo(_RelationInfo):
     """
     This class describes a feature table (*a.k.a* a "feature class").
     """
-    def __init__(self, name, geometry_type, fields, srid=None):
+    def __init__(self, name: str, geometry_type: GeometryType, fields: List[FieldInfo], srid: int=None):
         """
 
         :param name: the name of the relation
         :type name:  ``str``
         :param geometry_type: the type of geometry stored in the feature table
         :type geometry_type:  :py:class:`GeometryType`
-        :param fields: 
+        :param fields: the fields present in the feature table
         :type fields:  ``list`` of :py:class:`FieldInfo`
-        
+        :param srid: the spatial reference ID of geometries in this table
+        :type srid:  ``int``
         """
         super().__init__(self, name, fields)
         self._geometry_type = geometry_type
         self._srid = int(srid) if srid is not None else None
 
     @property
-    def geometry_type(self):
+    def geometry_type(self) -> GeometryType:
         """
         Get the geometry type.
         
-        :return: the geometry type 
         :rtype:  :py:class:`mothergeo.geometry.GeometryType`
         """
+        return self._geometry_type
 
     @property
-    def srid(self):
+    def srid(self) -> int:
+        """
+        Get the spatial reference ID of geometries in this table.
+        
+        :rtype: ``int``
+        """
         # If this feature table doesn't have its own SRID, use mother's default.
         return self._srid if self._srid is not None else DEFAULT_SRID
 
 
-class _RelationsCollection(object):
+class _RelationInfoCollection(object):
     """
     This is a base class for collections of information that define the relations (tables) in a 
     :py:class:`ModelInfo`.
     """
-    def __init__(self, common_fields, relations, default_identity):
+    def __init__(self, common_fields: List[FieldInfo], relations: List[_RelationInfo], default_identity: str):
         """
         
         :param common_fields: the common fields shared among relations in this collection
@@ -507,7 +527,7 @@ class _RelationsCollection(object):
         :type relations:  :py:class:`_RelationInfo`
         :param default_identity: the name of the default identity field for all defined relations
         :type default_identity:  ``str``
-        :seealso: :py:func:`_RelationsCollection.default_identity`
+        :seealso: :py:func:`_RelationInfoCollection.default_identity`
         """
         # If we didn't get any common fields...
         if common_fields is None:
@@ -532,7 +552,7 @@ class _RelationsCollection(object):
         return iter(self._relations.values())
 
     @property
-    def default_identity(self):
+    def default_identity(self) -> str:
         """
         Get the name of the default identity field for relations in this collection.
         
@@ -540,7 +560,7 @@ class _RelationsCollection(object):
         """
         return self._defaultIdentity
 
-    def get_common_field(self, name):
+    def get_common_field(self, name: str) -> FieldInfo:
         """
         Get a common field from the collection.
         
@@ -556,7 +576,7 @@ class _RelationsCollection(object):
         else:
             return self._relations[name]
 
-    def get_relation(self, name):
+    def get_relation(self, name: str) -> _RelationInfo:
         """
         Get a relation from the collection.
 
@@ -572,7 +592,7 @@ class _RelationsCollection(object):
         else:
             return self._relations[name]
 
-    def add_relation(self, relation):
+    def add_relation(self, relation: _RelationInfo):
         """
         Add a relation to the collection.
         
@@ -589,16 +609,16 @@ class _RelationsCollection(object):
             self._relations[relation.name] = relation
 
 
-class SpatialRelationsCollection(_RelationsCollection):
+class FeatureTableInfoCollection(_RelationInfoCollection):
     """
     This is a base class for collections of feature tables.
     """
-    def __init__(self, common_fields, relations, defaultIdentity, common_srid=None):
-        super().__init__(common_fields=common_fields, relations=relations)
+    def __init__(self, common_fields, relations, default_identity, common_srid=None):
+        super().__init__(common_fields=common_fields, relations=relations, default_identity=default_identity)
         self._common_srid = common_srid
 
     @property
-    def common_srid(self):
+    def common_srid(self) -> int:
         """
         Get the common spatial reference ID (SRID) shared by the relations.
         
@@ -613,13 +633,25 @@ class ModelInfo(object):
     """
     Instances of this class describe a data model.
     """
-    def __init__(self, name, revision, spatial_relations):
+    def __init__(self, name: str, revision: Revision, spatial_relations: FeatureTableInfoCollection):
+        """
+        
+        :param name: the model's name
+        :type name:  ``str``
+        :seealso: :py:func:`ModelInfo.name`
+        :param revision: the model's revision information
+        :type revision:  :py:class:`Revision`
+        :seealso:  :py:func:`ModelInfo.revision`
+        :param spatial_relations: the feature table information
+        :type spatial_relations:  :py:class:`FeatureTableInfoCollection`
+        :seealso:  :py:func:`spatial_relations`
+        """
         self._name = name
         self._revision = revision
         self._spatial_relations = spatial_relations
 
     @property
-    def name(self):
+    def name(self) ->  str:
         """
         Get the model's name.
         
@@ -629,7 +661,7 @@ class ModelInfo(object):
         return self._name
 
     @property
-    def revision(self):
+    def revision(self) -> Revision:
         """
         Get the model's revision information.
         
@@ -639,12 +671,12 @@ class ModelInfo(object):
         return self._revision
 
     @property
-    def spatial_relations(self):
+    def spatial_relations(self) -> FeatureTableInfoCollection:
         """
         Get the model's spatial relation information.
         
         :return: the model's spatial relation information
-        :rtype:  :py:class:`SpatialRelationsCollection`
+        :rtype:  :py:class:`FeatureTableInfoCollection`
         """
         return self._spatial_relations.values()
 
