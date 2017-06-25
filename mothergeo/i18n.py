@@ -9,6 +9,7 @@ Think locally, act globally.  These are tools to help with internationalization.
 """
 
 from collections import UserDict
+from typing import Dict
 
 current_locale = None  #: The current locale (``None`` indicates the default locale.)
 
@@ -29,7 +30,7 @@ class I18nPack(UserDict):
     
     .. seealso:: :py:func:`I18nPack.add_translation`
     """
-    def __init__(self, initialdata=None):
+    def __init__(self, initialdata: dict=None):
         """
 
         :param initialdata: a dictionary you can use to seed this package
@@ -38,7 +39,7 @@ class I18nPack(UserDict):
         super().__init__(initialdata if initialdata is not None else {})
         self.__translations = {}  #: This is a dictionary of locale's to translation packs.
 
-    def add_translation(self, key, translation, locale=None):
+    def add_translation(self, key: str, translation: str, locale: str=None):
         """
         Add a translation to this package.
         
@@ -64,7 +65,7 @@ class I18nPack(UserDict):
         # Now that we have a pack to update, let's do so.
         pack[key] = translation
 
-    def set_translations(self, translations, locale=None):
+    def set_translations(self, translations: Dict[str, str], locale: str=None):
         """
         Update the pack with a complete set of translations.
         

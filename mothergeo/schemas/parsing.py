@@ -46,7 +46,7 @@ class FormatException(Exception):
     :type message:  ``str``
     """
 
-    def __init__(self, message):
+    def __init__(self, message: str):
         super().__init__(message)
 
 
@@ -58,7 +58,7 @@ class ParseException(Exception):
     :type message:  ``str``
     """
 
-    def __init__(self, message):
+    def __init__(self, message: str):
         super().__init__(message)
 
 
@@ -67,13 +67,13 @@ class ModelInfoParser(object):
     This is an abstract base class that can be extended to convert between strings and :py:class:`ModelInfo` 
     objects.
     """
-    def parse(self, s):
+    def parse(self, s: str) -> ModelInfo:
         """
         Override this method in a subclass to parse a string into a :py:class:`Model`.
 
         :param s: the JSON string you want to parse, or the path to a file containing the JSON
         :type s:  ``str``
-        :return: the :py:class:`Model`
+        :return: the :py:class:`ModelInfo`
         :rtype:  :py:class:`ModelInfo`
         :except: :py:exc:`NotImplementedError`
         """
@@ -101,13 +101,13 @@ class JsonModelInfoParser(ModelInfoParser):
         super().__init__()
 
     @throws_parse_exception
-    def parse(self, s):
+    def parse(self, s: str) -> ModelInfo:
         """
         Parse a JSON string into a :py:class:`Model` object.
 
         :param s: the JSON string you want to parse, or the path to a file containing the JSON
         :type s:  str
-        :return: the :py:class:`Model`
+        :return: the :py:class:`ModelInfo`
         :rtype:  :py:class:`ModelInfo`
         :raises: :py:class:`ParseException` if we can't parse the input.
         """
@@ -131,7 +131,7 @@ class JsonModelInfoParser(ModelInfoParser):
     #     return None
 
     @staticmethod
-    def _json_2_revision(jsobj):
+    def _json_2_revision(jsobj: object) -> Revision:
         """
         Construct a :py:class:`Revision` from the object parsed out of a JSON string.
 
@@ -146,7 +146,7 @@ class JsonModelInfoParser(ModelInfoParser):
                         author_email=Dicts.try_get(jsobj, 'authorEmail').value)
 
     @staticmethod
-    def _json_2_spatial_relations(jsobj):
+    def _json_2_spatial_relations(jsobj: object) -> FeatureTableInfoCollection:
         # Create a new object with an empty collection of relations.
         common_fields = []
         relations = []
@@ -156,7 +156,7 @@ class JsonModelInfoParser(ModelInfoParser):
 
     @staticmethod
     @throws_parse_exception
-    def _json_2_field_info(jsobj):
+    def _json_2_field_info(jsobj: object) -> FieldInfo:
         name = jsobj['name']  # We absolutely require a name.
         unique = Dicts.try_get(jsobj, 'unique', False).value
         data_type = jsobj['type']  # We absolutely require a data type.
@@ -173,35 +173,35 @@ class JsonModelInfoParser(ModelInfoParser):
             usage=usage, nena=nena, domain=domain)
 
     @staticmethod
-    def _json_2_source(jsobj):
+    def _json_2_source(jsobj: object) -> Source:
         requirement = Dicts.try_get(jsobj, 'requirement', None).value
         analogs = Dicts.try_get(jsobj, 'analogs', []).value
         source = Source(requirement=requirement, analogs=analogs)
         return source
 
     @staticmethod
-    def _json_2_target(jsobj):
+    def _json_2_target(jsobj: object) -> Target:
         calculated = Dicts.try_get(jsobj, 'calculated', False).value
         guaranteed = Dicts.try_get(jsobj, 'guaranteed', False).value
         target = Target(calculated=calculated, guaranteed=guaranteed)
         return target
 
     @staticmethod
-    def _json_2_usage(jsobj):
+    def _json_2_usage(jsobj: object) -> Usage:
         search = Dicts.try_get(jsobj, 'search', False).value
         display = Dicts.try_get(jsobj, 'display', False).value
         usage = Usage(search=search, display=display)
         return usage
 
     @staticmethod
-    def _json_2_nena_spec(jsobj):
+    def _json_2_nena_spec(jsobj: object) -> NenaSpec:
         analog = Dicts.try_get(jsobj, 'analog', None).value
         required = Dicts.try_get(jsobj, 'required', False).value
         nena_spec = NenaSpec(analog=analog, required=required)
         return nena_spec
 
     @staticmethod
-    def _json_2_i18n(jsobj):
+    def _json_2_i18n(jsobj: object) -> I18nPack:
         # Get the default translations.
         defaults = jsobj['default'] if 'default' in jsobj else {}
         # Construct the pack.

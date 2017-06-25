@@ -27,7 +27,7 @@ class Enums(object):
     _names2members = {}  #: An index of enumeration member values indexed first by class, then by member name.
 
     @staticmethod
-    def from_name(enum_cls, name):
+    def from_name(enum_cls, name: str) -> Enum:
         """
         Get an enumeration member value from its name.
         
@@ -69,7 +69,7 @@ class Dicts(object):
     This is a utility class that wants to help you work with ``dict`` types.
     """
     @staticmethod
-    def try_get(obj, key, default=None):
+    def try_get(obj: dict, key: str, default: TryGetResult=None):
         """
         Try to retrieve a value from a :py:class:`dict` that may, or may not be present.
         

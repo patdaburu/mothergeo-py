@@ -651,7 +651,7 @@ class ModelInfo(object):
         self._feature_tables = feature_tables
 
     @property
-    def name(self) ->  str:
+    def name(self) -> str:
         """
         Get the model's name.
         
