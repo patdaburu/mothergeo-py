@@ -57,29 +57,55 @@ class ConfigurationManager(object):
 
     def map_env_variable(self, section: str, option: str, env_var: str):
         """
+        Map an environment variable to a configuration option.
         
-        :param section: 
-        :param option: 
-        :param env_var: 
-        :return: 
+        :param section: the configuration section
+        :type section:  ``str``
+        :param option: the configuration option name
+        :type option:  ``str`` 
+        :param env_var: the name of the environment variable
+        :type env_var:  ``str``
         """
         # Create a key to use in the environment variable overrides dictionary.
         key = ConfigurationManager._to_dict_key(section=section, option=option)
         # Now, let's set up the mapping.
         self._env_overrides[key] = env_var
 
+    def unmap_env_variable(self, section: str, option: str) -> str or None:
+        """
+        Map an environment variable to a configuration option.
+
+        :param section: the configuration section
+        :type section:  ``str``
+        :param option: the configuration option name
+        :type option:  ``str`` 
+        :return: the unmapped environment variable name (if any)
+        :rtype:  ``str`` or ``None``
+        """
+        # Create a key to use in the environment variable overrides dictionary.
+        key = ConfigurationManager._to_dict_key(section=section, option=option)
+        # If we find this key in the dictionary...
+        if key in self._env_overrides:
+            # Grab the value.  (We'll send it back, just in case the caller might need it.)
+            env_var = self._env_overrides[key]
+            # ...now remove it.
+            del self._env_overrides[key]
+            # And return it.
+            return env_var
+        else:
+            # Otherwise, we didn't find it.  Nothing to see here.
+            return None
+
     def set(self, section: str, option: str, value: str):
         """
         Set a configuration value.
         
-        :param section: 
-        :type section:
-        :param option:
-        :type option:
-        :param value:
-        :type value:
-        :return: 
-        :rtype:
+        :param section: the configuration section
+        :type section:  ``str``
+        :param option: the configuration option name
+        :type option:  ``str`` 
+        :param value: the new value
+        :type value:  ``str``
         """
         self._config_parser.set(section=section, option=option, value=value)
 
@@ -87,6 +113,7 @@ class ConfigurationManager(object):
     def _to_dict_key(section: str, option: str) -> tuple(str or None, str or None):
         """
         Create a dictionary key from a configuration section name and option.
+        
         :param section: the configuration section
         :type section:  ``str``
         :param option: the configuration option name
