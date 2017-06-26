@@ -27,6 +27,16 @@ mothergeo.codetools
     :show-inheritance:
     :synopsis: Helpful tools from mother.
 
+----------------
+mothergeo.config
+----------------
+.. automodule:: mothergeo.config
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+    :synopsis: May I take your order, please?
+
 ---------------------
 mothergeo.db.modeling
 ---------------------
