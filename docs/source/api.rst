@@ -37,6 +37,16 @@ mothergeo.config
     :show-inheritance:
     :synopsis: May I take your order, please?
 
+-------------------------------
+mothergeo.db.postgis.geoalchemy
+-------------------------------
+.. automodule:: mothergeo.db.postgis.geoalchemy
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+    :synopsis: How Mother works with `GeoAlchemy <https://geoalchemy-2.readthedocs.io/en/latest/>`_.
+
 ---------------------
 mothergeo.db.modeling
 ---------------------

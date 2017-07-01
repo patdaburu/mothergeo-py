@@ -408,9 +408,9 @@ class Revision(object):
         return self._author_email
 
 
-class _RelationInfo(object):
+class RelationInfo(object):
     """
-    This is a base class for classes that represent relations like tables or feature tables.
+    Relation information objects describe entity relations (like tables in a database).
     """
     def __init__(self, name: str, identity: str=None, fields: List[FieldInfo]=None):
         """
@@ -419,7 +419,7 @@ class _RelationInfo(object):
         :type name:  ``str``
         :param identity: the name of the field that contains the identity value for the relation
         :type identity:  ``str``
-        :seealso: :py:func:`_RelationInfo.identity`
+        :seealso: :py:func:`RelationInfo.identity`
         :param fields: 
         :type fields:  ``list`` of :py:class:`FieldInfo`
         """
@@ -473,9 +473,9 @@ class _RelationInfo(object):
         return self._fields[name]
 
 
-class FeatureTableInfo(_RelationInfo):
+class FeatureTableInfo(RelationInfo):
     """
-    This class describes a feature table (*a.k.a* a "feature class").
+    Feature table info objects describe a feature table (*a.k.a* a "feature class").
     """
     def __init__(self, name: str, geometry_type: GeometryType, fields: List[FieldInfo], srid: int=None):
         """
@@ -518,13 +518,13 @@ class _RelationInfoCollection(object):
     This is a base class for collections of information that define the relations (tables) in a 
     :py:class:`ModelInfo`.
     """
-    def __init__(self, common_fields: List[FieldInfo], relations: List[_RelationInfo], default_identity: str):
+    def __init__(self, common_fields: List[FieldInfo], relations: List[RelationInfo], default_identity: str):
         """
         
         :param common_fields: the common fields shared among relations in this collection
         :type common_fields:  ``list`` of :py:class:`FieldInfo`
         :param relations: the relations in this collection
-        :type relations:  :py:class:`_RelationInfo`
+        :type relations:  :py:class:`RelationInfo`
         :param default_identity: the name of the default identity field for all defined relations
         :type default_identity:  ``str``
         :seealso: :py:func:`_RelationInfoCollection.default_identity`
@@ -576,14 +576,14 @@ class _RelationInfoCollection(object):
         else:
             return self._relations[name]
 
-    def get_relation(self, name: str) -> _RelationInfo:
+    def get_relation(self, name: str) -> RelationInfo:
         """
         Get a relation from the collection.
 
         :param name: the relation's name
         :type name:  ``str``
         :return: the relation
-        :rtype:  :py:class:`_RelationInfo`
+        :rtype:  :py:class:`RelationInfo`
         """
         if name is None:
             raise TypeError('name cannot be None.')
@@ -592,12 +592,12 @@ class _RelationInfoCollection(object):
         else:
             return self._relations[name]
 
-    def add_relation(self, relation: _RelationInfo):
+    def add_relation(self, relation: RelationInfo):
         """
         Add a relation to the collection.
         
         :param relation: the relation
-        :type relation:  :py:class:`_RelationInfo`
+        :type relation:  :py:class:`RelationInfo`
         :raises TypeError: if the argument is ``None`` 
         :raises KeyError:  if the another relation with the same name is already present
         """

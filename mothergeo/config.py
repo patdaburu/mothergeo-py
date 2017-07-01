@@ -110,7 +110,7 @@ class ConfigurationManager(object):
         self._config_parser.set(section=section, option=option, value=value)
 
     @staticmethod
-    def _to_dict_key(section: str, option: str) -> tuple(str or None, str or None):
+    def _to_dict_key(section: str, option: str) -> (str or None, str or None):
         """
         Create a dictionary key from a configuration section name and option.
         
