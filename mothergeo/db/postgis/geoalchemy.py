@@ -116,57 +116,74 @@ def create_environment(connection_string: str = _DEFAULT_CONN_STR) -> GeoAlchemy
     return GeoAlchemyEnvironment(engine=engine, session=session)
 
 
-# class GeoAlchemyEntityClassFactory(EntityClassFactory):
-#     """
-#     Extend this class to create utility classes that can turn a :py:class:`RelationInfo` instance into an entity.
-#     """
-#     __metaclass__ = ABCMeta
-#
-#     def __init__(self, environment: GeoAlchemyEnvironment):
-#         """
-#
-#         :param environment: the GeoAlchemy environment
-#         :type environment:  :py:class:`GeoAlchemyEnvironment`
-#         """
-#         if environment is None:
-#             raise TypeError('environment parameter may not be None.')
-#         self._environment = environment
-#
-#     @property
-#     def environment(self) -> GeoAlchemyEnvironment:
-#         """
-#         Get the environment this class factory is using.
-#
-#         :rtype: :py:class:`GeoAlchemyEnvironment`
-#         """
-#         return self._environment
-#
-#     @abstractmethod
-#     def make(self, relation_info: RelationInfo) -> type:
-#         """
-#         Define a new :py:class:`GeoAlchemyEntity` class based on the definition in a :py:class:`RelationInfo`.
-#
-#         :param relation_info: the relation information that defines the entity
-#         :rtype: ``type``
-#         :return: a new class extended from :py:class:`GeoAlchemyEntity`
-#         """
-#         pass
+class GeoAlchemyEntityClassFactory(EntityClassFactory):
+    """
+    Extend this class to create utility classes that can turn a :py:class:`RelationInfo` instance into an entity.
+    """
+    __metaclass__ = ABCMeta
+
+    def __init__(self, environment: GeoAlchemyEnvironment):
+        """
+
+        :param environment: the GeoAlchemy environment
+        :type environment:  :py:class:`GeoAlchemyEnvironment`
+        """
+        if environment is None:
+            raise TypeError('environment parameter may not be None.')
+        self._environment = environment
+
+    @property
+    def environment(self) -> GeoAlchemyEnvironment:
+        """
+        Get the environment this class factory is using.
+
+        :rtype: :py:class:`GeoAlchemyEnvironment`
+        """
+        return self._environment
+
+    @abstractmethod
+    def make(self, relation_info: RelationInfo) -> type:
+        """
+        Define a new :py:class:`GeoAlchemyEntity` class based on the definition in a :py:class:`RelationInfo`.
+
+        :param relation_info: the relation information that defines the entity
+        :rtype: ``type``
+        :return: a new class extended from :py:class:`GeoAlchemyEntity`
+        """
+        pass
 
 
-# class GeoAlchemyFeatureTableClassFactory(EntityClassFactory, FeatureTableClassFactory):
-#     """
-#     Extend this class to create utility classes that can turn a :py:class:`FeatureTableInfo` instance into an feature.
-#     """
-#
-#     def make(self, relation_info: FeatureTableInfo) -> type:
-#         """
-#         Define a new :py:class:`GeoAlchemyFeature` subclass based on the definition in a :py:class:`FeatureTableInfo`.
-#
-#         :param relation_info: the relation information that defines the entity
-#         :rtype: ``type``
-#         :return: a new class extended from :py:class:`GeoAlchemyFeatureTable`
-#         """
-#         pass
+class GeoAlchemyFeatureTableClassFactory(GeoAlchemyEntityClassFactory, FeatureTableClassFactory):
+    """
+    Extend this class to create utility classes that can turn a :py:class:`FeatureTableInfo` instance into an feature.
+    """
+
+    def __init__(self, environment: GeoAlchemyEnvironment):
+        """
+
+        :param environment: the GeoAlchemy environment
+        :type environment:  :py:class:`GeoAlchemyEnvironment`
+        """
+        GeoAlchemyEntityClassFactory.__init__(self, environment)
+
+    def make(self, relation_info: FeatureTableInfo) -> type:
+        """
+        Define a new :py:class:`GeoAlchemyFeature` subclass based on the definition in a :py:class:`FeatureTableInfo`.
+
+        :param relation_info: the relation information that defines the entity
+        :rtype: ``type``
+        :return: a new class extended from :py:class:`GeoAlchemyFeatureTable`
+        """
+        pass
+
+
+
+
+
+
+
+
+
 
 # class SessionOptions(object):
 #     def __init__(self,

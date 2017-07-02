@@ -25,7 +25,6 @@ def throws_parse_exception(f):
     :return:  the wrapped function
     :rtype:  ``func``
     """
-
     @wraps(f)
     def wrapped(*args, **kwargs):
         try:
