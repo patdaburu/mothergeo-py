@@ -9,14 +9,39 @@ How Mother works with  `GeoAlchemy <https://geoalchemy-2.readthedocs.io/en/lates
 """
 
 from ..modeling import Entity, Feature, EntityClassFactory, FeatureTableClassFactory
-from ...schemas.modeling import RelationInfo, FeatureTableInfo, FieldInfo
+from ...schemas.modeling import DataType, RelationInfo, FeatureTableInfo, FieldInfo
 from abc import ABCMeta, abstractmethod
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
 _DEFAULT_CONN_STR = 'postgresql://postgres:postgres@localhost/mother'  #: The default connection string.
+
+
+class UnsupportedDataTypeError(Exception):
+    """
+    An exception of this type may be raised if an unsupported :py:class:`DataType` is used.  
+    """
+    def __init__(self, message: str, data_type: DataType):
+        """
+        
+        :param message: the exception message
+        :type message:  ``str``
+        :param data_type: the unsupported data type
+        :type data_type:  :py:class:`DataType`
+        """
+        super().__init__(message)
+        self._data_type = data_type
+
+    @property
+    def data_type(self) -> DataType:
+        """
+        Get the unsupported data type.
+        
+        :rtype: :py:class:`DataType` 
+        """
+        return self._data_type
 
 
 class GeoAlchemyEnvironment(object):
@@ -61,20 +86,20 @@ class GeoAlchemyEntity(Entity):
     This is an abstract class that can be extended dynamically to create new entity class types.
     """
     __metaclass__ = ABCMeta
-    __self_properties__ = [
+    __self_properties = [
         '_geoalchemy_obj',
-        '__geoalchemy_class__'
+        '_geoalchemy_class'
     ]  #: These are the properties that are never deferred to the encapsulated GeoAlchemy object.
 
     @abstractmethod
     def __init__(self, **kwargs):
         super().__init__()
-        self._geoalchemy_obj = self.__geoalchemy_class__(**kwargs)
+        self._geoalchemy_obj = self._geoalchemy_class(**kwargs)
 
     def __getattr__(self, item):
         # If the requested property is one of this object's properties (that is to say, it's _not_ a property of
         # the encapsulated GeoAlchemy object)...
-        if item in self.__self_properties__:
+        if item in self.__self_properties:
             # ...go straight to this instance's dictionary to retrieve the value.
             return self.__dict__[item]
         else:
@@ -84,7 +109,7 @@ class GeoAlchemyEntity(Entity):
     def __setattr__(self, key, value):
         # If the requested property is one of this object's properties (that is to say, it's _not_ a property of
         # the encapsulated GeoAlchemy object)...
-        if key in self.__self_properties__:
+        if key in self.__self_properties:
             # ...go straight to this instance's dictionary to retrieve the value.
             self.__dict__[key] = value
         else:
@@ -151,6 +176,40 @@ class GeoAlchemyEntityClassFactory(EntityClassFactory):
         :return: a new class extended from :py:class:`GeoAlchemyEntity`
         """
         pass
+
+    @staticmethod
+    def _field_info_to_sqlalchemy_column(field_info: FieldInfo, identity: bool=False):
+        """
+        Create a SQLAlchemy ``Column`` based on the information in a :py:class:`FieldInfo` object.
+        
+        :param field_info: the field information
+        :type field_info:  :py:class:`FieldInfo`
+        :param identity: Is this the identity column (i.e. the primary key)?
+        :type identity:  ``bool``
+        :return: the SQLAlchemy column
+        :rtype:  :py:class:`sqlalchemy.Column`
+        """
+        # What's the name of the column?
+        column_name = field_info.name
+        # The next step is to create a GeoAlchemy column type suitable to the data type.
+        if field_info.data_type == DataType.TEXT:  # Text?
+            # How wide is this string?
+            length = field_info.width
+            # Great.  Create the column.
+            column = Column(column_name, String(length=length), primary_key=identity)
+        # TODO: We have to figure out how to handle GUIDS.
+        # elif field_info.data_type == DataType.UUID:  # UUID? (i.e Guid?)
+        #     column = None
+        elif field_info.data_type == DataType.INT:  # Integer?
+            column = Column(column_name, Integer, primary_key=identity)
+        elif field_info.data_type == DataType.FLOAT:  # Floating point number?
+            column = Column(column_name, Float, primary_key=identity)
+        elif field_info.data_type == DataType.DATETIME:  # DateTime?
+            column = Column(column_name, DateTime, primary_key=identity)
+        else:
+            raise UnsupportedDataTypeError(message='The data type is unsupported.', data_type=DataType)
+        # Return what we have.
+        return column
 
 
 class GeoAlchemyFeatureTableClassFactory(GeoAlchemyEntityClassFactory, FeatureTableClassFactory):
