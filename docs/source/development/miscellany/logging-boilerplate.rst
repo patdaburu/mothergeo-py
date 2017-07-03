@@ -1,8 +1,12 @@
-.. _logging:
+.. _logging-boilerplate:
 
-***************************
-Logging in Python Libraries
-***************************
+*********************************************************
+From the Hitchhicker's Guide: Logging in Python Libraries
+*********************************************************
+
+.. note::
+
+    If you're wondering how Mother likes to handle logging, take a look at :ref:`logging`.
 
 It is, of course, desirable for library modules to perform logging.  However, we generally want to maintain consistency
 and allow the consuming application to perform logging configuration.  This article details a strategy for achieving
@@ -28,7 +32,6 @@ From `The Hitchhiker's Guide to Python <http://python-guide-pt-br.readthedocs.io
                 pass
 
     logging.getLogger(__name__).addHandler(NullHandler())
-
 
 
 Acknowledgments

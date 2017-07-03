@@ -5,6 +5,13 @@ Development
 
 mothergeo is under active development.
 
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :caption: Helpful Guidance for the Curious and Confused
+
+   development/*
+
 
 .. _design:
 
@@ -33,4 +40,17 @@ How To...
    :maxdepth: 2
    :caption: Helpful Guidance for the Curious and Confused
 
-   development/*
+   development/how-to/*
+
+.. _dev-misc:
+
+----------
+Miscellany
+----------
+
+.. toctree::
+   :glob:
+   :maxdepth: 2
+   :caption: Useful, Interesting, A Little Esoteric
+
+   development/miscellany/*

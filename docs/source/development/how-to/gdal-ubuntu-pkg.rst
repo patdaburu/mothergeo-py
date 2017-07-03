@@ -1,8 +1,8 @@
 .. _gdal-ubuntu-pkg:
 
-**************************************
-Installing GDAL/OGR Packages on Ubuntu
-**************************************
+******************************************
+How To Install GDAL/OGR Packages on Ubuntu
+******************************************
 
 `GDAL <http://gdal.org/>`_ is a translator library for raster and vector geospatial data formats.
 

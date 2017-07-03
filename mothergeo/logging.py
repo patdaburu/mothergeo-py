@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-.. currentmodule:: mothergeo.logging
+.. currentmodule:: mothergeo.logging.rst
 .. moduleauthor:: Pat Daburu <pat@daburu.net>
 
 Dear diary...
@@ -13,7 +13,7 @@ import logging
 def loggable_class(cls):
     """
     This is a decorator you can apply to a class to set it up with a Python ``logger`` property suitable for your
-    logging needs.
+    logging.rst needs.
     
     :param cls: the decorated class 
     :type cls:  ``type``

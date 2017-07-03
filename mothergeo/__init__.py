@@ -13,7 +13,7 @@ import logging
 __version__ = '0.0.1'
 __release__ = '0.0.1'
 
-# Set default logging handler to avoid "No handler found" warnings.
+# Set default logging.rst handler to avoid "No handler found" warnings.
 try:  # Python 2.7+
     from logging import NullHandler
 except ImportError:

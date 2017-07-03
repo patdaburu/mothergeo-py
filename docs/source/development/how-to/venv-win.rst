@@ -1,8 +1,8 @@
 .. _venv-setup-win:
 
-*********************************************
-Set Up a Virtual Python Environment (Windows)
-*********************************************
+****************************************************
+How To Set Up a Virtual Python Environment (Windows)
+****************************************************
 
 ``virtualenv`` is a tool to create isolated Python environments.  You can read more about it in the
 `Virtualenv documentation <https://virtualenv.pypa.io/en/stable/>`_.  This article provides a quick summary to help
