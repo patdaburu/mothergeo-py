@@ -129,7 +129,7 @@ class TestJsonModelInfoParser(unittest.TestCase):
             "name": "srcFullNam",
             "unique": true,
             "type": "text",
-            "width": 200,
+            "preferences": { "length" : 200 },
             "source": {
               "requirement" : "required",
               "analogs" : [ "street_nam?", "strnam" ]
@@ -163,7 +163,7 @@ class TestJsonModelInfoParser(unittest.TestCase):
         self.assertEqual('srcFullNam', field_info.name)
         self.assertEqual(True, field_info.unique)
         self.assertEqual(DataType.TEXT, field_info.data_type)
-        self.assertEqual(200, field_info.width)
+        self.assertEqual(200, field_info.preferences['length'])
         self.assertEqual(Requirement.REQUIRED, field_info.source.requirement)
         self.assertEqual(2, len(field_info.source.analogs))
         self.assertTrue('street_nam?' in field_info.source.analogs)

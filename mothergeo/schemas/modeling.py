@@ -193,7 +193,7 @@ class FieldInfo(object):
                  target: Target,
                  i18n: I18nPack,
                  unique: bool=False,
-                 width: int or None=None,
+                 preferences: dict or None=None,
                  usage: Usage=None,
                  nena: NenaSpec=None,
                  domain: set or list=None):
@@ -216,8 +216,8 @@ class FieldInfo(object):
         :param unique: indicates whether or not values must be unique
         :type unique: ``bool``
         :seealso: :py:func:`FieldInfo.unique`
-        :param width: the field's width
-        :type width:  ``int``
+        :param preferences: the field's width
+        :type preferences:  ``dict``
         :seealso: :py:func:`FieldInfo.width`
         :param usage: information about how the data in this field will be used
         :type usage:  :py:class:`Usage`
@@ -234,7 +234,7 @@ class FieldInfo(object):
         self._source = source
         self._target = target
         self._i18n = i18n
-        self._width = width
+        self._preferences = preferences
         self._usage = usage if usage is not None else Usage()
         self._nena = nena if nena is not None else NenaSpec()
         self._domain = set(domain) if domain is not None else None
@@ -322,14 +322,14 @@ class FieldInfo(object):
         return self._domain
 
     @property
-    def width(self) -> int or None:
+    def preferences(self) -> dict or None:
         """
-        Get the field's width.
+        Get the field's additional preferences.
         
         :return: the field's width
         :rtype:  ``str``
         """
-        return self._width
+        return self._preferences
 
 
 class Revision(object):

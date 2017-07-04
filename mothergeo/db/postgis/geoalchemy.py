@@ -8,6 +8,7 @@
 How Mother works with  `GeoAlchemy <https://geoalchemy-2.readthedocs.io/en/latest/>`_.
 """
 
+from ...codetools import Dicts
 from ..modeling import Entity, Feature, EntityClassFactory, FeatureTableClassFactory
 from ...schemas.modeling import DataType, RelationInfo, FeatureTableInfo, FieldInfo
 from abc import ABCMeta, abstractmethod
@@ -141,6 +142,13 @@ def create_environment(connection_string: str = _DEFAULT_CONN_STR) -> GeoAlchemy
     return GeoAlchemyEnvironment(engine=engine, session=session)
 
 
+class _DataTypeDefaults(object):
+    """
+    This is a set of internal constants that represent default options for different data types.
+    """
+    text_length = 150  #: the default length of a text column
+
+
 class GeoAlchemyEntityClassFactory(EntityClassFactory):
     """
     Extend this class to create utility classes that can turn a :py:class:`RelationInfo` instance into an entity.
@@ -191,23 +199,30 @@ class GeoAlchemyEntityClassFactory(EntityClassFactory):
         """
         # What's the name of the column?
         column_name = field_info.name
+        # Grab the preferences from the field information (which may, or may not, have any).
+        preferences = field_info.preferences if field_info.preferences is not None else {}
+        # And to make the following code a little shorter, let's reference the data type directly.
+        data_type = field_info.data_type
         # The next step is to create a GeoAlchemy column type suitable to the data type.
-        if field_info.data_type == DataType.TEXT:  # Text?
-            # How wide is this string?
-            length = field_info.width
+        if data_type == DataType.TEXT:  # Text?
+            # How big can this string be?
+            length = Dicts.try_get(preferences, 'length', default=_DataTypeDefaults.text_length).value
             # Great.  Create the column.
             column = Column(column_name, String(length=length), primary_key=identity)
         # TODO: We have to figure out how to handle GUIDS.
         # elif field_info.data_type == DataType.UUID:  # UUID? (i.e Guid?)
         #     column = None
-        elif field_info.data_type == DataType.INT:  # Integer?
+        elif data_type == DataType.INT:  # Integer?
             column = Column(column_name, Integer, primary_key=identity)
-        elif field_info.data_type == DataType.FLOAT:  # Floating point number?
+        elif data_type == DataType.FLOAT:  # Floating point number?
             column = Column(column_name, Float, primary_key=identity)
-        elif field_info.data_type == DataType.DATETIME:  # DateTime?
+        elif data_type == DataType.DATETIME:  # DateTime?
             column = Column(column_name, DateTime, primary_key=identity)
         else:
-            raise UnsupportedDataTypeError(message='The data type is unsupported.', data_type=DataType)
+            # We didn't find anything we can use.
+            raise UnsupportedDataTypeError(
+                message='The {dt} data type is unsupported.'.format(dt=data_type.name),
+                data_type=data_type)
         # Return what we have.
         return column
 

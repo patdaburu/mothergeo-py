@@ -160,7 +160,7 @@ class JsonModelInfoParser(ModelInfoParser):
         unique = Dicts.try_get(jsobj, 'unique', False).value
         data_type = jsobj['type']  # We absolutely require a data type.
         domain = Dicts.try_get(jsobj, 'domain', None).value
-        width = Dicts.try_get(jsobj, 'width', None).value
+        preferences = Dicts.try_get(jsobj, 'preferences', None).value
         source = JsonModelInfoParser._json_2_source(jsobj['source'])
         target = JsonModelInfoParser._json_2_target(jsobj['target'])
         usage = JsonModelInfoParser._json_2_usage(Dicts.try_get(jsobj, 'usage', {}).value)
@@ -168,8 +168,8 @@ class JsonModelInfoParser(ModelInfoParser):
         i18n = JsonModelInfoParser._json_2_i18n(jsobj['i18n'])  # We absolutely require I18n information.
         # Now that we have all our information, we can construct a FieldInfo object!
         return FieldInfo(
-            name=name, data_type=data_type, source=source, target=target, unique=unique, i18n=i18n, width=width,
-            usage=usage, nena=nena, domain=domain)
+            name=name, data_type=data_type, source=source, target=target, unique=unique, i18n=i18n,
+            preferences=preferences, usage=usage, nena=nena, domain=domain)
 
     @staticmethod
     def _json_2_source(jsobj: object) -> Source:
