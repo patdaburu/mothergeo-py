@@ -50,18 +50,22 @@ class GeoAlchemyEnvironment(object):
     Instances of this class contain references to important GeoAlchemy hooks, like the current 
     engine and session.
     """
-    def __init__(self, engine: Engine, session: Session):
+    def __init__(self, engine: Engine, session: Session, schema: str='public'):
         """
         
         :param engine: the GeoAlchemy engine
         :type engine:  :rtype: :py:class:`sqlalchemy.engine.Engine`
         :param session: the GeoAlchemy session
         :type session:  :rtype: `:py:class:`sqlalchemy.orm.session.Session`
+        :param schema: the name of the preferred PostgreSQL schema
+        :type schema:  ``str``
         :seealso: :py:func:`engine`
         :seealso: :py:func:`session`
+        :seealso: :py:func:`schema`
         """
         self._engine = engine
         self._session = session
+        self._schema = schema
 
     @property
     def engine(self) -> Engine:
@@ -80,6 +84,15 @@ class GeoAlchemyEnvironment(object):
         :rtype: :py:class:`sqlalchemy.orm.session.Session`
         """
         return self._session
+
+    @property
+    def schema(self) -> str:
+        """
+        Get the name of the preferred PostgreSQL schema.
+        
+        :rtype: ``str`` 
+        """
+        return self._schema
 
 
 class GeoAlchemyEntity(Entity):
@@ -175,15 +188,39 @@ class GeoAlchemyEntityClassFactory(EntityClassFactory):
         return self._environment
 
     @abstractmethod
-    def make(self, relation_info: RelationInfo) -> type:
+    def make(self, relation_info: RelationInfo, schema: str=None) -> type:
         """
         Define a new :py:class:`GeoAlchemyEntity` class based on the definition in a :py:class:`RelationInfo`.
 
         :param relation_info: the relation information that defines the entity
+        :type relation_info:  :py:class:`RelationInfo`
+        :param schema: the PostgreSQL schema
+        :type schema:  ``str``
         :rtype: ``type``
         :return: a new class extended from :py:class:`GeoAlchemyEntity`
+        :seealso: :py:func:`GeoAlchemyEnvironment.schema`
         """
-        pass
+        # Let's figure out what schema we're working in.
+        _schema = schema if schema is not None else self.environment.schema
+        # Let's start building up the new class' properties.
+        _table_props = {
+            "__tablename__": relation_info.name,
+            "__table_args__": {"schema": _schema}  # TODO: How to get the schema name?!
+        }
+        _field_props = self._define_fields()
+        props = {**_table_props, **_field_props}
+
+    @property
+    def base_type(self):
+        return GeoAlchemyEntity
+
+    def _define_fields(self) -> dict:
+        """
+        This is a template method that creates
+        
+        :return: 
+        """
+        return {}
 
     @staticmethod
     def _field_info_to_sqlalchemy_column(field_info: FieldInfo, identity: bool=False):

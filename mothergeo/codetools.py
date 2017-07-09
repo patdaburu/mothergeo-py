@@ -69,7 +69,7 @@ class Dicts(object):
     This is a utility class that wants to help you work with ``dict`` types.
     """
     @staticmethod
-    def try_get(obj: dict, key: str, default: TryGetResult=None):
+    def try_get(obj: dict, key: str, default=None) -> TryGetResult:
         """
         Try to retrieve a value from a :py:class:`dict` that may, or may not be present.
         
