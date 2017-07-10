@@ -212,15 +212,35 @@ class GeoAlchemyEntityClassFactory(EntityClassFactory):
 
     @property
     def base_type(self):
+        """
+        This is the base type for any new types created by this factory.  Override this property if your factory
+        needs to specify a different base type.
+        
+        :return: the base type
+        :rtype:  ``type`` (:py:class:`GeoAlchemyEntity`)
+        """
         return GeoAlchemyEntity
 
-    def _define_fields(self) -> dict:
+    def _define_fields(self, relation_info: RelationInfo) -> dict:
         """
-        This is a template method that creates
+        This is a template method that creates a dictionary of properties that will be used in the construction of
+        a new type.  Override this method to modify the properties of the new type before it is created.
         
-        :return: 
+        :param relation_info: the relation information from which properties are constructed
+        :type relation_info:  :py:class:`RelationInfo`
+        :return: the properties to add to the new type
+        :rtype:  ``dict``
         """
-        return {}
+        # Let's use a dictionary comprehension to construct the properties dict.
+        return {
+            # The property name is the same as the field name.
+            str(field.name):
+                # The SqlAlchemy column will be created by the factory method.
+                self._field_info_to_sqlalchemy_column(
+                    field_info=field,
+                    identity=(relation_info.get_identity_field() == field))
+            for field in relation_info.fields
+        }
 
     @staticmethod
     def _field_info_to_sqlalchemy_column(field_info: FieldInfo, identity: bool=False):
@@ -276,6 +296,17 @@ class GeoAlchemyFeatureTableClassFactory(GeoAlchemyEntityClassFactory, FeatureTa
         :type environment:  :py:class:`GeoAlchemyEnvironment`
         """
         GeoAlchemyEntityClassFactory.__init__(self, environment)
+
+    @property
+    def base_type(self):
+        """
+        This is the base type for any new types created by this factory.  Override this property if your factory
+        needs to specify a different base type.
+
+        :return: the base type
+        :rtype:  ``type`` (:py:class:`GeoAlchemyFeature`)
+        """
+        return GeoAlchemyFeature
 
     def make(self, relation_info: FeatureTableInfo) -> type:
         """

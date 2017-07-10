@@ -451,6 +451,16 @@ class RelationInfo(object):
         :rtype:  ``str`` 
         """
         return self._identity
+
+    @property
+    def fields(self) -> iter:
+        """
+        Get this relation's field information
+        
+        :return:  this relation's fields
+        :rtype:  iter(:py:class:`FieldInfo`)
+        """
+        return iter(self._fields.values())
     
     def get_identity_field(self) -> str:
         """
