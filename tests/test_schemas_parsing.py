@@ -4,6 +4,7 @@
 import json
 import unittest
 import mothergeo.i18n
+from mothergeo.geometry import GeometryType
 from mothergeo.schemas.modeling import DataType, Requirement
 from mothergeo.schemas.parsing import JsonModelInfoParser
 
@@ -176,6 +177,185 @@ class TestJsonModelInfoParser(unittest.TestCase):
         self.assertTrue(field_info.nena.required)
         self.assertEqual('I18N_FRIENDLY', field_info.i18n.friendlyName)
         self.assertEqual('I18N_DESC', field_info.i18n.description)
+
+    def test_json_2_feature_table(self):
+        jsons = """
+        {
+          "name": "FeatureTable1",
+          "geometryType": "Polygon",
+          "nena": {
+            "analog": null,
+            "required": true
+          },
+          "i18n": {
+            "default": {
+              "friendlyName": "Test Feature Table 1",
+              "description": "We're testing here."
+            },
+            "ja_jp": {
+              "friendlyName": "プレースホルダ",
+              "description": "プレースホルダの説明"
+            }
+          },
+          "fields": [
+            {
+              "name": "text_field_1",
+              "unique": true,
+              "type": "text",
+              "preferences": null,
+              "source": {
+                "requirement": null
+              },
+              "target": {
+                "calculated": true,
+                "guaranteed": true
+              },
+              "usage": {
+                "search": false,
+                "display": false
+              },
+              "nena": {
+                "analog": null,
+                "required": null
+              },
+              "i18n": {
+                "default": {
+                  "friendlyName": "Text Field 1",
+                  "description": "This is a text field"
+                },
+                "ja_jp": {
+                  "friendlyName": "プレースホルダ",
+                  "description": "プレースホルダの説明"
+                }
+              }
+            },
+            {
+              "name": "int_field_1",
+              "unique": false,
+              "type": "int",
+              "preferences": null,
+              "source": {
+                "requirement": null
+              },
+              "target": {
+                "calculated": true,
+                "guaranteed": true
+              },
+              "usage": {
+                "search": false,
+                "display": false
+              },
+              "nena": {
+                "analog": null,
+                "required": null
+              },
+              "i18n": {
+                "default": {
+                  "friendlyName": "Int Field 1",
+                  "description": "This is an int field"
+                },
+                "ja_jp": {
+                  "friendlyName": "プレースホルダ",
+                  "description": "プレースホルダの説明"
+                }
+              }
+            }
+          ]
+        }
+        """
+        jsobj = json.loads(jsons)
+        ft = JsonModelInfoParser._json_2_feature_table_info(jsobj, default_identity='text_field_1', common_fields=[])
+        self.assertEqual('FeatureTable1', ft.name)
+        self.assertIs(GeometryType.POLYGON, ft.geometry_type)
+        self.assertEqual(2, sum(1 for _ in ft.fields))
+        self.assertIsNotNone(ft.get_field('text_field_1'))
+        self.assertEqual(DataType.TEXT, ft.get_field('text_field_1').data_type)
+        self.assertIsNotNone(ft.get_field('int_field_1'))
+        self.assertEqual(DataType.INT, ft.get_field('int_field_1').data_type)
+        self.assertEqual('text_field_1', ft.get_identity_field().name)
+
+    def test_json_2_feature_table_info_collection(self):
+        jsons = """
+                {
+                  "commonSrid": 102100,
+                  "defaultIdentity": "common_field_2",
+                  "commonFields": [
+                    {
+                      "name": "common_field_1",
+                      "unique": true,
+                      "type": "text",
+                      "preferences": null,
+                      "source": {
+                        "requirement": null
+                      },
+                      "target": {
+                        "calculated": true,
+                        "guaranteed": true
+                      },
+                      "usage": {
+                        "search": false,
+                        "display": false
+                      },
+                      "nena": {
+                        "analog": null,
+                        "required": null
+                      },
+                      "i18n": {
+                        "default": {
+                          "friendlyName": "commonField1",
+                          "description": "This is the first common field."
+                        },
+                        "ja_jp": {
+                          "friendlyName": "プレースホルダ",
+                          "description": "プレースホルダの説明"
+                        }
+                      }
+                    },
+                    {
+                      "name": "common_field_2",
+                      "unique": true,
+                      "type": "int",
+                      "preferences": null,
+                      "source": {
+                        "requirement": null
+                      },
+                      "target": {
+                        "calculated": true,
+                        "guaranteed": true
+                      },
+                      "usage": {
+                        "search": false,
+                        "display": false
+                      },
+                      "nena": {
+                        "analog": null,
+                        "required": null
+                      },
+                      "i18n": {
+                        "default": {
+                          "friendlyName": "commonField2",
+                          "description": "This is the second common field."
+                        },
+                        "ja_jp": {
+                          "friendlyName": "プレースホルダ",
+                          "description": "プレースホルダの説明"
+                        }
+                      }
+                    }
+                  ],
+                  "featureTables": [
+                  
+                  
+                  ]
+                }
+                """
+        jsobj = json.loads(jsons)
+        ft_coll = JsonModelInfoParser._json_2_feature_table_info_collection(jsobj)
+        self.assertEqual(102100, ft_coll.common_srid)
+        self.assertEqual('common_field_2', ft_coll.default_identity)
+        self.assertEqual(2, sum(1 for _ in ft_coll.common_fields))
+        self.assertIsNotNone(ft_coll.get_common_field('common_field_1'))
+        self.assertIsNotNone(ft_coll.get_common_field('common_field_2'))
 
 
 if __name__ == '__main__':

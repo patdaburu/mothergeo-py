@@ -8,11 +8,13 @@
 Provide a brief description of the module.
 """
 
-from .modeling import (FieldInfo, ModelInfo, NenaSpec, Revision, Source, Target, FeatureTableInfoCollection, Usage)
-from ..codetools import Dicts
-from ..geometry import DEFAULT_SRID
+from .modeling import (
+    FieldInfo, ModelInfo, NenaSpec, Revision, Source, Target, FeatureTableInfo, FeatureTableInfoCollection, Usage)
+from ..codetools import Dicts, Enums
+from ..geometry import DEFAULT_SRID, GeometryType
 from ..i18n import I18nPack
 from functools import wraps
+from typing import List
 import json
 
 
@@ -145,13 +147,49 @@ class JsonModelInfoParser(ModelInfoParser):
                         author_email=Dicts.try_get(jsobj, 'authorEmail').value)
 
     @staticmethod
-    def _json_2_spatial_relations(jsobj: object) -> FeatureTableInfoCollection:
-        # Create a new object with an empty collection of relations.
-        common_fields = []
-        relations = []
+    def _json_2_feature_table_info_collection(jsobj: dict) -> FeatureTableInfoCollection:
+        # Get the default identity.
+        default_identity = jsobj['defaultIdentity']
+        # Now the common spatial reference ID.
+        common_srid = Dicts.try_get(jsobj, 'commonSrid', DEFAULT_SRID).value
+        # Create field information objects for the common fields.
+        common_fields = [JsonModelInfoParser._json_2_field_info(fij) for fij in jsobj['commonFields']]
+        # Now construct the feature tables.
+        feature_tables = [
+            JsonModelInfoParser._json_2_feature_table_info(
+                jsobj=ftj,
+                common_fields=common_fields,
+                default_srid=common_srid) for ftj in jsobj['featureTables']
+        ]
         # Now that we have the information we need, let's create the object.
         return FeatureTableInfoCollection(
-            common_fields, relations, Dicts.try_get(jsobj, 'commonSrid', DEFAULT_SRID).value)
+            common_fields=common_fields,
+            feature_tables=feature_tables,
+            default_identity=default_identity,
+            common_srid=common_srid)
+
+    @staticmethod
+    def _json_2_feature_table_info(
+            jsobj: object,
+            common_fields: List[FieldInfo],
+            default_identity: str,
+            default_srid: int=None) -> FeatureTableInfo:
+        name = jsobj['name']
+        geometry_type = Enums.from_name(GeometryType, jsobj['geometryType'])
+        nena = JsonModelInfoParser._json_2_nena_spec(jsobj['nena'])
+        i18n = JsonModelInfoParser._json_2_i18n(jsobj['i18n'])
+        # The full list of fields for the feature table includes all the fields specifically defined, plus the
+        # common fields that have been defined.
+        fields = [JsonModelInfoParser._json_2_field_info(fi_json) for fi_json in jsobj['fields']] + common_fields
+        identity = default_identity if 'identity' in jsobj else default_identity
+        srid = jsobj['srid'] if 'srid' in jsobj else default_srid
+        return FeatureTableInfo(
+            name=name,
+            identity=identity,
+            geometry_type=geometry_type,
+            fields=fields,
+            srid=srid, nena=nena,
+            i18n=i18n)
 
     @staticmethod
     @throws_parse_exception

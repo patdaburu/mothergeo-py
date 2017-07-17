@@ -9,15 +9,20 @@ How Mother works with  `GeoAlchemy <https://geoalchemy-2.readthedocs.io/en/lates
 """
 
 from ...codetools import Dicts
+from ...geometry import GeometryType, UnsupportedGeometryException
+from geoalchemy2 import Geometry
 from ..modeling import Entity, Feature, EntityClassFactory, FeatureTableClassFactory
 from ...schemas.modeling import DataType, RelationInfo, FeatureTableInfo, FieldInfo
 from abc import ABCMeta, abstractmethod
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
 _DEFAULT_CONN_STR = 'postgresql://postgres:postgres@localhost/mother'  #: The default connection string.
+
+Base = declarative_base()  #: The SQLAlchemy declarative base class that is the common descendant of dynamic types.
 
 
 class UnsupportedDataTypeError(Exception):
@@ -107,7 +112,7 @@ class GeoAlchemyEntity(Entity):
 
     @abstractmethod
     def __init__(self, **kwargs):
-        super().__init__()
+        super().__init__(**kwargs)
         self._geoalchemy_obj = self._geoalchemy_class(**kwargs)
 
     def __getattr__(self, item):
@@ -168,15 +173,17 @@ class GeoAlchemyEntityClassFactory(EntityClassFactory):
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self, environment: GeoAlchemyEnvironment):
+    def __init__(self, environment: GeoAlchemyEnvironment, geometry_column_name: str='geom'):
         """
 
         :param environment: the GeoAlchemy environment
         :type environment:  :py:class:`GeoAlchemyEnvironment`
         """
+        super().__init__()
         if environment is None:
             raise TypeError('environment parameter may not be None.')
         self._environment = environment
+        self._geometry_column_name = geometry_column_name
 
     @property
     def environment(self) -> GeoAlchemyEnvironment:
@@ -187,7 +194,15 @@ class GeoAlchemyEntityClassFactory(EntityClassFactory):
         """
         return self._environment
 
-    @abstractmethod
+    @property
+    def geometry_column_name(self) -> str:
+        """
+        Get the name of the field that will contain geometries.
+
+        :rtype: ``str``
+        """
+        return self._geometry_column_name
+
     def make(self, relation_info: RelationInfo, schema: str=None) -> type:
         """
         Define a new :py:class:`GeoAlchemyEntity` class based on the definition in a :py:class:`RelationInfo`.
@@ -208,7 +223,25 @@ class GeoAlchemyEntityClassFactory(EntityClassFactory):
             "__table_args__": {"schema": _schema}  # TODO: How to get the schema name?!
         }
         _field_props = self._define_fields()
+        # Merge the table properties and the field properties.
         props = {**_table_props, **_field_props}
+        # We should now have enough information to construct the GeoAlchemy type.
+        inner_cls = type(
+            "GeoAlchemyDynamic_{relation_name}_Inner".format(relation_name=relation_info.name),
+            (Base,),  # Inherit from the SQLAlchemy declarative base class.
+            props)
+        # Create the GeoAlchemy table in the database.
+        inner_cls.__table__.create(self.environment.engine)
+        # Now let's create the wrapper class.
+        new_cls = type(
+            "GeoAlchemyDynamic_{relation_name}".format(relation_name=relation_info.name),
+            (self.base_type,),  # Inherit from the type specified by the factory.
+            {
+                '_geoalchemy_class': inner_cls
+            }
+        )
+        # That's it!
+        return new_cls
 
     @property
     def base_type(self):
@@ -243,7 +276,7 @@ class GeoAlchemyEntityClassFactory(EntityClassFactory):
         }
 
     @staticmethod
-    def _field_info_to_sqlalchemy_column(field_info: FieldInfo, identity: bool=False):
+    def _field_info_to_sqlalchemy_column(field_info: FieldInfo, identity: bool=False) -> Column:
         """
         Create a SQLAlchemy ``Column`` based on the information in a :py:class:`FieldInfo` object.
         
@@ -308,15 +341,44 @@ class GeoAlchemyFeatureTableClassFactory(GeoAlchemyEntityClassFactory, FeatureTa
         """
         return GeoAlchemyFeature
 
-    def make(self, relation_info: FeatureTableInfo) -> type:
+    def _define_fields(self, feature_table_info: FeatureTableInfo) -> dict:
         """
-        Define a new :py:class:`GeoAlchemyFeature` subclass based on the definition in a :py:class:`FeatureTableInfo`.
+        This is a template method that creates a dictionary of properties that will be used in the construction of
+        a new type.  Override this method to modify the properties of the new type before it is created.
 
-        :param relation_info: the relation information that defines the entity
-        :rtype: ``type``
-        :return: a new class extended from :py:class:`GeoAlchemyFeatureTable`
+        :param feature_table_info: the feature table information from which properties are constructed
+        :type feature_table_info:  :py:class:`FeatureTableInfo`
+        :return: the properties to add to the new type
+        :rtype:  ``dict``
         """
-        pass
+        # Get the properties from the parent class.
+        props = super()._define_fields(relation_info=feature_table_info)
+        # Add the geometry type.
+        props['geometry'] = self._geometry_type_to_sqlalchemy_column(feature_table_info.geometry_type)
+        # Return the dictionary.
+        return props
+
+    def _geometry_type_to_sqlalchemy_column(self, geometry_type: GeometryType) -> Column:
+        """
+        Create a SQLAlchemy ``Column`` for a supported :py:class:`GeometryType`.
+
+        :param geometry_type: the geometry type
+        :type geometry_type:  :py:class:`GeometryType`
+        :return: the SQLAlchemy column
+        :rtype:  :py:class:`sqlalchemy.Column`
+        """
+        if geometry_type == GeometryType.POINT:
+            return Column(self.geometry_column_name, Geometry('POINT'))
+        elif geometry_type == GeometryType.POLYLINE:
+            return Column(self.geometry_column_name, Geometry('POLYLINE'))
+        elif geometry_type == GeometryType.POLYGON:
+            return Column(self.geometry_column_name, Geometry('POLYGON'))
+        else:  # It looks like we didn't account for this geometry type.
+            raise UnsupportedGeometryException(
+                message="The geometry type is not supported.",
+                geometry_type=geometry_type)
+
+
 
 
 

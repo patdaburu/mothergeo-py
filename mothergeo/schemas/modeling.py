@@ -12,7 +12,7 @@ from ..codetools import Enums
 from ..i18n import I18nPack
 from mothergeo.geometry import DEFAULT_SRID, GeometryType
 from insensitive_dict import CaseInsensitiveDict
-from typing import List
+from typing import List, Iterator
 
 import numbers
 from enum import Enum
@@ -412,7 +412,12 @@ class RelationInfo(object):
     """
     Relation information objects describe entity relations (like tables in a database).
     """
-    def __init__(self, name: str, identity: str=None, fields: List[FieldInfo]=None):
+    def __init__(self,
+                 name: str,
+                 identity: str=None,
+                 fields: List[FieldInfo]=None,
+                 nena: NenaSpec=None,
+                 i18n: I18nPack=None):
         """
         
         :param name: the name of the relation
@@ -422,6 +427,10 @@ class RelationInfo(object):
         :seealso: :py:func:`RelationInfo.identity`
         :param fields: 
         :type fields:  ``list`` of :py:class:`FieldInfo`
+        :param nena: information about how this field relates to the NENA standard
+        :type nena:  :py:class:`NenaSpec`
+        :param i18n: informative strings that describe the field in various languages
+        :type i18n:  :py:func:`i18n.I18nPack`
         """
         self._name = name
         self._identity = identity
@@ -433,6 +442,8 @@ class RelationInfo(object):
             self._fields = CaseInsensitiveDict({str(field.name): field for field in fields})
         else:
             raise ValueError('common_fields must be a list.')
+        self._nena = nena
+        self._i18n = i18n
 
     @property
     def name(self) -> str:
@@ -461,8 +472,26 @@ class RelationInfo(object):
         :rtype:  iter(:py:class:`FieldInfo`)
         """
         return iter(self._fields.values())
+
+    @property
+    def i18n(self) -> I18nPack:
+        """
+        Get informative strings that describe this field in various languages.
+
+        :rtype: :py:class:`I18n`
+        """
+        return self._i18n
+
+    @property
+    def nena(self) -> NenaSpec:
+        """
+        Get information about how this field relates to the NENA specification.
+
+        :rtype: :py:class:`NenaSpec`
+        """
+        return self._nena
     
-    def get_identity_field(self) -> str:
+    def get_identity_field(self) -> FieldInfo:
         """
         Get the field information for the field that contains the identity values for the relation.
         
@@ -487,19 +516,32 @@ class FeatureTableInfo(RelationInfo):
     """
     Feature table info objects describe a feature table (*a.k.a* a "feature class").
     """
-    def __init__(self, name: str, geometry_type: GeometryType, fields: List[FieldInfo], srid: int=None):
+    def __init__(self,
+                 name: str,
+                 identity: str,
+                 geometry_type: GeometryType,
+                 fields: List[FieldInfo],
+                 srid: int=None,
+                 nena: NenaSpec=None,
+                 i18n: I18nPack=None):
         """
 
         :param name: the name of the relation
         :type name:  ``str``
+        :type identity:  ``str``
+        :seealso: :py:func:`RelationInfo.identity`
         :param geometry_type: the type of geometry stored in the feature table
         :type geometry_type:  :py:class:`GeometryType`
         :param fields: the fields present in the feature table
         :type fields:  ``list`` of :py:class:`FieldInfo`
         :param srid: the spatial reference ID of geometries in this table
         :type srid:  ``int``
+        :param nena: information about how this field relates to the NENA standard
+        :type nena:  :py:class:`NenaSpec`
+        :param i18n: informative strings that describe the field in various languages
+        :type i18n:  :py:func:`i18n.I18nPack`
         """
-        super().__init__(self, name, fields)
+        super().__init__(name=name, identity=identity, fields=fields, nena=nena, i18n=i18n)
         self._geometry_type = geometry_type
         self._srid = int(srid) if srid is not None else None
 
@@ -552,7 +594,7 @@ class _RelationInfoCollection(object):
             self._relations = {}  # ...our internal index is empty.
         elif isinstance(relations, list):  # If we got the type we expect...
             # ...create an index for the fields that uses the table's name as a key.
-                self._relations = CaseInsensitiveDict({field.name: field for field in relations})
+            self._relations = CaseInsensitiveDict({field.name: field for field in relations})
         else:
             raise ValueError('relations must be a list.')
         self._default_identity = default_identity
@@ -568,7 +610,16 @@ class _RelationInfoCollection(object):
         
         :rtype:  ``str`` 
         """
-        return self._defaultIdentity
+        return self._default_identity
+
+    @property
+    def common_fields(self) -> Iterator[FieldInfo]:
+        """
+        Get the common fields defined for the collection.
+
+        :rtype: :py:class:`Iterator`
+        """
+        return iter(self._common_fields)
 
     def get_common_field(self, name: str) -> FieldInfo:
         """
@@ -584,7 +635,7 @@ class _RelationInfoCollection(object):
         elif name not in self._common_fields:
             raise KeyError("Common field '{name)' is not defined.".format(name=name))
         else:
-            return self._relations[name]
+            return self._common_fields[name]
 
     def get_relation(self, name: str) -> RelationInfo:
         """
@@ -623,8 +674,8 @@ class FeatureTableInfoCollection(_RelationInfoCollection):
     """
     This is a base class for collections of feature tables.
     """
-    def __init__(self, common_fields, relations, default_identity, common_srid=None):
-        super().__init__(common_fields=common_fields, relations=relations, default_identity=default_identity)
+    def __init__(self, common_fields, feature_tables, default_identity, common_srid=None):
+        super().__init__(common_fields=common_fields, relations=feature_tables, default_identity=default_identity)
         self._common_srid = common_srid
 
     @property
@@ -680,15 +731,15 @@ class ModelInfo(object):
         """
         return self._revision
 
-    @property
-    def feature_tables(self) -> FeatureTableInfoCollection:
-        """
-        Get the model's spatial relation information.
-        
-        :return: the model's spatial relation information
-        :rtype:  :py:class:`FeatureTableInfoCollection`
-        """
-        return self._feature_tables.values()
+    # @property
+    # def feature_tables(self) -> FeatureTableInfoCollection:
+    #     """
+    #     Get the model's spatial relation information.
+    #
+    #     :return: the model's spatial relation information
+    #     :rtype:  :py:class:`FeatureTableInfoCollection`
+    #     """
+    #     return self._feature_tables.values()
 
 
 
