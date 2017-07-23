@@ -159,6 +159,7 @@ class JsonModelInfoParser(ModelInfoParser):
             JsonModelInfoParser._json_2_feature_table_info(
                 jsobj=ftj,
                 common_fields=common_fields,
+                default_identity=default_identity,
                 default_srid=common_srid) for ftj in jsobj['featureTables']
         ]
         # Now that we have the information we need, let's create the object.

@@ -11,6 +11,7 @@ Helpful utilities from mother.
 from collections import namedtuple
 from enum import Enum
 from insensitive_dict import CaseInsensitiveDict
+from typing import Iterator
 
 
 class TryGetResult(namedtuple('TryResult', ['result', 'value'])):
@@ -89,5 +90,35 @@ class Dicts(object):
         else:  # We didn't find the key, eh?...
             # ...return the default value to the caller.
             return TryGetResult(False, default)
+
+
+class Iters(object):
+    """
+    This is a utility class that wnats to help you work with iterators.
+    """
+    @staticmethod
+    def count(it: Iterator) -> int:
+        """
+        Get the number of items in an iterator.
+
+        :param it: the iterator
+        :type it:  ``iter``
+        :return: the number of items in the iterator
+        :rtype:  ``int``
+        """
+        return sum(1 for _ in it)
+
+    @staticmethod
+    def get_item_at(it: Iterator, index: int):
+        """
+        Get the item at a given index from an iterator.
+
+        :param it: the iterator
+        :type it:  ``iter``
+        :param index: the index of the item you want
+        :type index:  ``int``
+        :return:  the item at the specified index
+        """
+        return [item for item in it][index]
 
 

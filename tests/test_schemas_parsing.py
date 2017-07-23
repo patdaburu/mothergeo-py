@@ -4,6 +4,7 @@
 import json
 import unittest
 import mothergeo.i18n
+from mothergeo.codetools import Iters
 from mothergeo.geometry import GeometryType
 from mothergeo.schemas.modeling import DataType, Requirement
 from mothergeo.schemas.parsing import JsonModelInfoParser
@@ -274,7 +275,7 @@ class TestJsonModelInfoParser(unittest.TestCase):
         self.assertEqual(DataType.INT, ft.get_field('int_field_1').data_type)
         self.assertEqual('text_field_1', ft.get_identity_field().name)
 
-    def test_json_2_feature_table_info_collection(self):
+    def test_json_2_feature_table_info_collection_without_feature_tables(self):
         jsons = """
                 {
                   "commonSrid": 102100,
@@ -356,6 +357,174 @@ class TestJsonModelInfoParser(unittest.TestCase):
         self.assertEqual(2, sum(1 for _ in ft_coll.common_fields))
         self.assertIsNotNone(ft_coll.get_common_field('common_field_1'))
         self.assertIsNotNone(ft_coll.get_common_field('common_field_2'))
+        self.assertIsNotNone(ft_coll.feature_tables)
+        self.assertEqual(0, sum(1 for _ in ft_coll.feature_tables))
+
+    def test_json_2_feature_table_info_collection_with_feature_tables(self):
+        jsons = """
+        {
+          "commonSrid": 102100,
+          "defaultIdentity": "common_field_2",
+          "commonFields": [
+            {
+              "name": "common_field_1",
+              "unique": true,
+              "type": "text",
+              "preferences": null,
+              "source": {
+                "requirement": null
+              },
+              "target": {
+                "calculated": true,
+                "guaranteed": true
+              },
+              "usage": {
+                "search": false,
+                "display": false
+              },
+              "nena": {
+                "analog": null,
+                "required": null
+              },
+              "i18n": {
+                "default": {
+                  "friendlyName": "commonField1",
+                  "description": "This is the first common field."
+                },
+                "ja_jp": {
+                  "friendlyName": "プレースホルダ",
+                  "description": "プレースホルダの説明"
+                }
+              }
+            },
+            {
+              "name": "common_field_2",
+              "unique": true,
+              "type": "int",
+              "preferences": null,
+              "source": {
+                "requirement": null
+              },
+              "target": {
+                "calculated": true,
+                "guaranteed": true
+              },
+              "usage": {
+                "search": false,
+                "display": false
+              },
+              "nena": {
+                "analog": null,
+                "required": null
+              },
+              "i18n": {
+                "default": {
+                  "friendlyName": "commonField2",
+                  "description": "This is the second common field."
+                },
+                "ja_jp": {
+                  "friendlyName": "プレースホルダ",
+                  "description": "プレースホルダの説明"
+                }
+              }
+            }
+          ],
+          "featureTables": [
+            {
+              "name": "FeatureTable1",
+              "geometryType": "Polygon",
+              "nena": {
+                "analog": null,
+                "required": true
+              },
+              "i18n": {
+                "default": {
+                  "friendlyName": "Test Feature Table 1",
+                  "description": "We're testing here."
+                },
+                "ja_jp": {
+                  "friendlyName": "プレースホルダ",
+                  "description": "プレースホルダの説明"
+                }
+              },
+              "fields": [
+                {
+                  "name": "text_field_1",
+                  "unique": true,
+                  "type": "text",
+                  "preferences": null,
+                  "source": {
+                    "requirement": null
+                  },
+                  "target": {
+                    "calculated": true,
+                    "guaranteed": true
+                  },
+                  "usage": {
+                    "search": false,
+                    "display": false
+                  },
+                  "nena": {
+                    "analog": null,
+                    "required": null
+                  },
+                  "i18n": {
+                    "default": {
+                      "friendlyName": "Text Field 1",
+                      "description": "This is a text field"
+                    },
+                    "ja_jp": {
+                      "friendlyName": "プレースホルダ",
+                      "description": "プレースホルダの説明"
+                    }
+                  }
+                },
+                {
+                  "name": "int_field_1",
+                  "unique": false,
+                  "type": "int",
+                  "preferences": null,
+                  "source": {
+                    "requirement": null
+                  },
+                  "target": {
+                    "calculated": true,
+                    "guaranteed": true
+                  },
+                  "usage": {
+                    "search": false,
+                    "display": false
+                  },
+                  "nena": {
+                    "analog": null,
+                    "required": null
+                  },
+                  "i18n": {
+                    "default": {
+                      "friendlyName": "Int Field 1",
+                      "description": "This is an int field"
+                    },
+                    "ja_jp": {
+                      "friendlyName": "プレースホルダ",
+                      "description": "プレースホルダの説明"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """
+        jsobj = json.loads(jsons)
+        ft_coll = JsonModelInfoParser._json_2_feature_table_info_collection(jsobj)
+        self.assertEqual(102100, ft_coll.common_srid)
+        self.assertEqual('common_field_2', ft_coll.default_identity)
+        self.assertEqual(2, sum(1 for _ in ft_coll.common_fields))
+        self.assertIsNotNone(ft_coll.get_common_field('common_field_1'))
+        self.assertIsNotNone(ft_coll.get_common_field('common_field_2'))
+        self.assertIsNotNone(ft_coll.feature_tables)
+        self.assertEqual(1, Iters.count(ft_coll.feature_tables))
+        self.assertEqual('FeatureTable1', Iters.get_item_at(ft_coll.feature_tables, 0).name)
 
 
 if __name__ == '__main__':

@@ -637,6 +637,15 @@ class _RelationInfoCollection(object):
         else:
             return self._common_fields[name]
 
+    @property
+    def relations(self) -> Iterator[RelationInfo]:
+        """
+        Get the relations in this collection.
+
+        :rtype: :py:class:`Iterator[RelationInfo]`
+        """
+        return iter(self._relations.values())
+
     def get_relation(self, name: str) -> RelationInfo:
         """
         Get a relation from the collection.
@@ -688,6 +697,20 @@ class FeatureTableInfoCollection(_RelationInfoCollection):
         """
         # If the collection doesn't specify its own common SRID, use mother's default.
         return self._common_srid if self._common_srid is not None else DEFAULT_SRID
+
+    @property
+    def feature_tables(self) -> Iterator[FeatureTableInfo]:
+        """
+        Get the feature tables in this collection.
+
+        :rtype: ``iter(:py:class:`RelationInfo`)``
+        :seealso:  :py:func:`RelationInfoCollection.relations`
+
+        .. note::
+
+            This property returns the same values as the :py:func:`RelationInfo.relations` property.
+        """
+        return self.relations
 
 
 class ModelInfo(object):
