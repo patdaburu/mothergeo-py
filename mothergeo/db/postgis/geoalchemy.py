@@ -11,7 +11,7 @@ How Mother works with  `GeoAlchemy <https://geoalchemy-2.readthedocs.io/en/lates
 from ...codetools import Dicts
 from ...geometry import GeometryType, UnsupportedGeometryException
 from geoalchemy2 import Geometry
-from ..modeling import Entity, Feature, EntityClassFactory, FeatureTableClassFactory
+from ..modeling import DataStore, Entity, Feature, EntityClassFactory, FeatureTableClassFactory
 from ...schemas.modeling import DataType, RelationInfo, FeatureTableInfo, FieldInfo
 from abc import ABCMeta, abstractmethod
 from sqlalchemy.ext.declarative import declarative_base
@@ -50,56 +50,6 @@ class UnsupportedDataTypeError(Exception):
         return self._data_type
 
 
-class GeoAlchemyEnvironment(object):
-    """
-    Instances of this class contain references to important GeoAlchemy hooks, like the current 
-    engine and session.
-    """
-    def __init__(self, engine: Engine, session: Session, schema: str='public'):
-        """
-        
-        :param engine: the GeoAlchemy engine
-        :type engine:  :rtype: :py:class:`sqlalchemy.engine.Engine`
-        :param session: the GeoAlchemy session
-        :type session:  :rtype: `:py:class:`sqlalchemy.orm.session.Session`
-        :param schema: the name of the preferred PostgreSQL schema
-        :type schema:  ``str``
-        :seealso: :py:func:`engine`
-        :seealso: :py:func:`session`
-        :seealso: :py:func:`schema`
-        """
-        self._engine = engine
-        self._session = session
-        self._schema = schema
-
-    @property
-    def engine(self) -> Engine:
-        """
-        Get the GeoAlchemy engine.
-
-        :rtype: :py:class:`sqlalchemy.engine.Engine`
-        """
-        return self._engine
-
-    @property
-    def session(self) -> Session:
-        """
-        Get the GeoAlchemy session.
-        
-        :rtype: :py:class:`sqlalchemy.orm.session.Session`
-        """
-        return self._session
-
-    @property
-    def schema(self) -> str:
-        """
-        Get the name of the preferred PostgreSQL schema.
-        
-        :rtype: ``str`` 
-        """
-        return self._schema
-
-
 class GeoAlchemyEntity(Entity):
     """
     This is an abstract class that can be extended dynamically to create new entity class types.
@@ -107,7 +57,8 @@ class GeoAlchemyEntity(Entity):
     __metaclass__ = ABCMeta
     __self_properties = [
         '_geoalchemy_obj',
-        '_geoalchemy_class'
+        '_geoalchemy_class',
+        '_data_store'
     ]  #: These are the properties that are never deferred to the encapsulated GeoAlchemy object.
 
     @abstractmethod
@@ -147,17 +98,88 @@ class GeoAlchemyFeature(Feature, GeoAlchemyEntity):
         super().__init__(**kwargs)
 
 
-def create_environment(connection_string: str = _DEFAULT_CONN_STR) -> GeoAlchemyEnvironment:
+class GeoAlchemyDataStore(DataStore):
     """
-    Create a :py:class:`GeoAlchemyEnvironment` from a PostgreSQL connection string.
-    
-    :param connection_string: a PostgreSQL environment variable.
-    :type connection_string:  ``str``
-    :rtype: :py:class:`GeoAlchemyEnvironment`
+    Instances of this class contain references to important GeoAlchemy hooks, like the current
+    engine and session.
     """
-    engine = create_engine(connection_string, echo=False)
-    session = sessionmaker(bind=engine)
-    return GeoAlchemyEnvironment(engine=engine, session=session)
+
+    def __init__(self, engine: Engine, session: Session, schema: str = 'public'):
+        """
+
+        :param engine: the GeoAlchemy engine
+        :type engine:  :rtype: :py:class:`sqlalchemy.engine.Engine`
+        :param session: the GeoAlchemy session
+        :type session:  :rtype: `:py:class:`sqlalchemy.orm.session.Session`
+        :param schema: the name of the preferred PostgreSQL schema
+        :type schema:  ``str``
+        :seealso: :py:func:`engine`
+        :seealso: :py:func:`session`
+        :seealso: :py:func:`schema`
+        """
+        super().__init__()
+        self._engine = engine
+        self._session = session
+        self._schema = schema
+
+    @property
+    def engine(self) -> Engine:
+        """
+        Get the GeoAlchemy engine.
+
+        :rtype: :py:class:`sqlalchemy.engine.Engine`
+        """
+        return self._engine
+
+    @property
+    def session(self) -> Session:
+        """
+        Get the GeoAlchemy session.
+
+        :rtype: :py:class:`sqlalchemy.orm.session.Session`
+        """
+        return self._session
+
+    @property
+    def schema(self) -> str:
+        """
+        Get the name of the preferred PostgreSQL schema.
+
+        :rtype: ``str``
+        """
+        return self._schema
+
+    def add(self, entity: GeoAlchemyEntity):
+        self.session.add(entity)
+
+    def commit(self):
+        self.session.commit()
+
+    @staticmethod
+    def create(connection_string: str = _DEFAULT_CONN_STR) -> DataStore:
+        """
+        Create a :py:class:`GeoAlchemyDataStore` from a PostgreSQL connection string.
+
+        :param connection_string: a PostgreSQL data_store variable.
+        :type connection_string:  ``str``
+        :rtype: :py:class:`GeoAlchemyDataStore`
+        """
+        engine = create_engine(connection_string, echo=False)
+        session = sessionmaker(bind=engine)()
+        return GeoAlchemyDataStore(engine=engine, session=session)
+
+
+# def create_environment(connection_string: str = _DEFAULT_CONN_STR) -> GeoAlchemyDataStore:
+#     """
+#     Create a :py:class:`GeoAlchemyDataStore` from a PostgreSQL connection string.
+#
+#     :param connection_string: a PostgreSQL data_store variable.
+#     :type connection_string:  ``str``
+#     :rtype: :py:class:`GeoAlchemyDataStore`
+#     """
+#     engine = create_engine(connection_string, echo=False)
+#     session = sessionmaker(bind=engine)()
+#     return GeoAlchemyDataStore(engine=engine, session=session)
 
 
 class _DataTypeDefaults(object):
@@ -173,26 +195,26 @@ class GeoAlchemyEntityClassFactory(EntityClassFactory):
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self, environment: GeoAlchemyEnvironment, geometry_column_name: str='geom'):
+    def __init__(self, data_store: GeoAlchemyDataStore, geometry_column_name: str= 'geom'):
         """
 
-        :param environment: the GeoAlchemy environment
-        :type environment:  :py:class:`GeoAlchemyEnvironment`
+        :param data_store: the GeoAlchemy data store
+        :type data_store:  :py:class:`GeoAlchemyDataStore`
         """
         super().__init__()
-        if environment is None:
-            raise TypeError('environment parameter may not be None.')
-        self._environment = environment
+        if data_store is None:
+            raise TypeError('data_store parameter may not be None.')
+        self._data_store = data_store
         self._geometry_column_name = geometry_column_name
 
     @property
-    def environment(self) -> GeoAlchemyEnvironment:
+    def data_store(self) -> GeoAlchemyDataStore:
         """
-        Get the environment this class factory is using.
+        Get the data store this class factory is using.
 
-        :rtype: :py:class:`GeoAlchemyEnvironment`
+        :rtype: :py:class:`GeoAlchemyDataStore`
         """
-        return self._environment
+        return self._data_store
 
     @property
     def geometry_column_name(self) -> str:
@@ -203,7 +225,7 @@ class GeoAlchemyEntityClassFactory(EntityClassFactory):
         """
         return self._geometry_column_name
 
-    def make(self, relation_info: RelationInfo, schema: str=None) -> type:
+    def make(self, relation_info: RelationInfo, schema: str='public') -> type:
         """
         Define a new :py:class:`GeoAlchemyEntity` class based on the definition in a :py:class:`RelationInfo`.
 
@@ -213,31 +235,33 @@ class GeoAlchemyEntityClassFactory(EntityClassFactory):
         :type schema:  ``str``
         :rtype: ``type``
         :return: a new class extended from :py:class:`GeoAlchemyEntity`
-        :seealso: :py:func:`GeoAlchemyEnvironment.schema`
+        :seealso: :py:func:`GeoAlchemyDataStore.schema`
         """
         # Let's figure out what schema we're working in.
-        _schema = schema if schema is not None else self.environment.schema
+        _schema = schema if schema is not None else self.data_store.schema
         # Let's start building up the new class' properties.
         _table_props = {
             "__tablename__": relation_info.name,
-            "__table_args__": {"schema": _schema}  # TODO: How to get the schema name?!
+            "__table_args__": {"schema": _schema}
         }
-        _field_props = self._define_fields()
+        # Define the field properties we need to construct the class.
+        _field_props = self._define_fields(relation_info=relation_info)
         # Merge the table properties and the field properties.
         props = {**_table_props, **_field_props}
         # We should now have enough information to construct the GeoAlchemy type.
         inner_cls = type(
             "GeoAlchemyDynamic_{relation_name}_Inner".format(relation_name=relation_info.name),
             (Base,),  # Inherit from the SQLAlchemy declarative base class.
-            props)
+            props)  # Provide the properties.
         # Create the GeoAlchemy table in the database.
-        inner_cls.__table__.create(self.environment.engine)
+        inner_cls.__table__.create(self.data_store.engine)
         # Now let's create the wrapper class.
         new_cls = type(
             "GeoAlchemyDynamic_{relation_name}".format(relation_name=relation_info.name),
             (self.base_type,),  # Inherit from the type specified by the factory.
             {
-                '_geoalchemy_class': inner_cls
+                '_geoalchemy_class': inner_cls,
+                '_data_store': self._data_store  # Each instance will have a reference to the data_store.
             }
         )
         # That's it!
@@ -322,13 +346,13 @@ class GeoAlchemyFeatureTableClassFactory(GeoAlchemyEntityClassFactory, FeatureTa
     Extend this class to create utility classes that can turn a :py:class:`FeatureTableInfo` instance into an feature.
     """
 
-    def __init__(self, environment: GeoAlchemyEnvironment):
+    def __init__(self, data_store: GeoAlchemyDataStore):
         """
 
-        :param environment: the GeoAlchemy environment
-        :type environment:  :py:class:`GeoAlchemyEnvironment`
+        :param data_store: the GeoAlchemy data_store
+        :type data_store:  :py:class:`GeoAlchemyDataStore`
         """
-        GeoAlchemyEntityClassFactory.__init__(self, environment)
+        GeoAlchemyEntityClassFactory.__init__(self, data_store)
 
     @property
     def base_type(self):
@@ -341,20 +365,20 @@ class GeoAlchemyFeatureTableClassFactory(GeoAlchemyEntityClassFactory, FeatureTa
         """
         return GeoAlchemyFeature
 
-    def _define_fields(self, feature_table_info: FeatureTableInfo) -> dict:
+    def _define_fields(self, relation_info: FeatureTableInfo) -> dict:
         """
         This is a template method that creates a dictionary of properties that will be used in the construction of
         a new type.  Override this method to modify the properties of the new type before it is created.
 
-        :param feature_table_info: the feature table information from which properties are constructed
-        :type feature_table_info:  :py:class:`FeatureTableInfo`
+        :param relation_info: the feature table information from which properties are constructed
+        :type relation_info:  :py:class:`FeatureTableInfo`
         :return: the properties to add to the new type
         :rtype:  ``dict``
         """
         # Get the properties from the parent class.
-        props = super()._define_fields(relation_info=feature_table_info)
+        props = super()._define_fields(relation_info=relation_info)
         # Add the geometry type.
-        props['geometry'] = self._geometry_type_to_sqlalchemy_column(feature_table_info.geometry_type)
+        props['geom'] = self._geometry_type_to_sqlalchemy_column(relation_info.geometry_type)
         # Return the dictionary.
         return props
 

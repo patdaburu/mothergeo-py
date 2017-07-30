@@ -20,6 +20,13 @@ The following commands will create a new virtual environment under my-project/my
     cd my-project
     virtualenv --python C:\Path\To\Python\python.exe venv
 
+.. note::
+
+        | If you download the installer from `python.org <http://www.python.org>`_ and install to the default location,
+          ``python.exe`` will likely be found under your home directory, something like:
+        | ``C:\Users\<your-username>\AppData\Local\Programs\Python\Python36-32\python.exe``
+
+
 Activate the Environment
 ========================
 

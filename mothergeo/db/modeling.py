@@ -84,3 +84,25 @@ class FeatureTableClassFactory(EntityClassFactory):
         pass
 
 
+class DataStore(object):
+    """
+    Extend this class to represent a data store (i.e. a database).
+    """
+
+    @abstractmethod
+    def add(self, entity: Entity):
+        """
+        Add an entity to the data store.
+
+        :param entity: the entity you want to add
+        :type entity:  :py:class:`Entity`
+        """
+        pass
+
+    @abstractmethod
+    def commit(self):
+        """
+        Commit outstanding changes to the data store.
+        """
+        pass
+

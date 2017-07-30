@@ -657,7 +657,7 @@ class _RelationInfoCollection(object):
         """
         if name is None:
             raise TypeError('name cannot be None.')
-        elif name not in self._common_fields:
+        elif name not in self._relations:
             raise KeyError("Relation '{name)' is not defined.".format(name=name))
         else:
             return self._relations[name]
@@ -697,6 +697,18 @@ class FeatureTableInfoCollection(_RelationInfoCollection):
         """
         # If the collection doesn't specify its own common SRID, use mother's default.
         return self._common_srid if self._common_srid is not None else DEFAULT_SRID
+
+    def get_feature_table(self, name: str) -> FeatureTableInfo:
+        """
+        Get a feature table from the collection.
+
+        :param name: the feature table's name
+        :type name:  ``str``
+        :return: the feature table
+        :rtype:  :py:class:`FeatureTableInfo`
+        :seealso: :py:func:`_RelationInfoCollection.get_relation`
+        """
+        return self.get_relation(name)
 
     @property
     def feature_tables(self) -> Iterator[FeatureTableInfo]:

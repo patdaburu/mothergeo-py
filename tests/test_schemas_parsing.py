@@ -524,7 +524,9 @@ class TestJsonModelInfoParser(unittest.TestCase):
         self.assertIsNotNone(ft_coll.get_common_field('common_field_2'))
         self.assertIsNotNone(ft_coll.feature_tables)
         self.assertEqual(1, Iters.count(ft_coll.feature_tables))
+        self.assertIsNotNone(ft_coll.get_feature_table('FeatureTable1'))
         self.assertEqual('FeatureTable1', Iters.get_item_at(ft_coll.feature_tables, 0).name)
+        self.assertIs(ft_coll.get_feature_table('FeatureTable1'), Iters.get_item_at(ft_coll.feature_tables, 0))
 
 
 if __name__ == '__main__':

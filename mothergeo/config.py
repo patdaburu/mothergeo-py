@@ -19,7 +19,7 @@ class ConfigurationManager(object):
     def __init__(self):
         # Create the built-in Python configuration parser we'll use to read configuration in from a file.
         self._config_parser = ConfigParser()
-        # It's possible for environment variables to override values configured elsewhere.  This is how we'll keep
+        # It's possible for data_store variables to override values configured elsewhere.  This is how we'll keep
         # track of what overrides what.
         self._env_overrides = {}
 
@@ -45,11 +45,11 @@ class ConfigurationManager(object):
         :return: the configured value
         :rtype:  ``str``
         """
-        # Check to see if there are environment variables that are supposed to override this option.
+        # Check to see if there are data_store variables that are supposed to override this option.
         env_override_key = ConfigurationManager._to_dict_key(section=section, option=option)
-        # If we do have an override, and the mapped environment variable seems to be configured in the environment...
+        # If we do have an override, and the mapped data_store variable seems to be configured in the data_store...
         if env_override_key in self._env_overrides and self._env_overrides[env_override_key] is os.environ:
-            # ...return the environment variable's value.
+            # ...return the data_store variable's value.
             return os.environ[self._env_overrides[env_override_key]]
         else:
             # Otherwise, see what the built-in Python configuration parser has.
@@ -57,32 +57,32 @@ class ConfigurationManager(object):
 
     def map_env_variable(self, section: str, option: str, env_var: str):
         """
-        Map an environment variable to a configuration option.
+        Map an data_store variable to a configuration option.
         
         :param section: the configuration section
         :type section:  ``str``
         :param option: the configuration option name
         :type option:  ``str`` 
-        :param env_var: the name of the environment variable
+        :param env_var: the name of the data_store variable
         :type env_var:  ``str``
         """
-        # Create a key to use in the environment variable overrides dictionary.
+        # Create a key to use in the data_store variable overrides dictionary.
         key = ConfigurationManager._to_dict_key(section=section, option=option)
         # Now, let's set up the mapping.
         self._env_overrides[key] = env_var
 
     def unmap_env_variable(self, section: str, option: str) -> str or None:
         """
-        Map an environment variable to a configuration option.
+        Map an data_store variable to a configuration option.
 
         :param section: the configuration section
         :type section:  ``str``
         :param option: the configuration option name
         :type option:  ``str`` 
-        :return: the unmapped environment variable name (if any)
+        :return: the unmapped data_store variable name (if any)
         :rtype:  ``str`` or ``None``
         """
-        # Create a key to use in the environment variable overrides dictionary.
+        # Create a key to use in the data_store variable overrides dictionary.
         key = ConfigurationManager._to_dict_key(section=section, option=option)
         # If we find this key in the dictionary...
         if key in self._env_overrides:

@@ -10,6 +10,7 @@ Helpful utilities from mother.
 
 from collections import namedtuple
 from enum import Enum
+from itertools import tee
 from insensitive_dict import CaseInsensitiveDict
 from typing import Iterator
 
@@ -106,7 +107,10 @@ class Iters(object):
         :return: the number of items in the iterator
         :rtype:  ``int``
         """
-        return sum(1 for _ in it)
+        # Use the tee function to make a copy of the iterator (so we don't exhaust the original iterator).
+        t = tee(it, 1)[0]
+        # So, this is one way to get the count...
+        return sum(1 for _ in t)
 
     @staticmethod
     def get_item_at(it: Iterator, index: int):
@@ -119,6 +123,9 @@ class Iters(object):
         :type index:  ``int``
         :return:  the item at the specified index
         """
-        return [item for item in it][index]
+        # Use the tee function to make a copy of the iterator (so we don't exhaust the original iterator).
+        t = tee(it, 1)[0]
+        # Use the copy to create a list and get the item.
+        return list(t)[index]
 
 
