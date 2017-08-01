@@ -97,9 +97,20 @@ class I18nPack(UserDict):
             return pack[name]  # ...great!
         elif pack is not self and name in self:  # If it's not defined in the pack, but may be in the defaults...
             return self[name] # ...return the default.
-        else: # We just couldn't find it.  C'est la vie.
+        else:  # We just couldn't find it.  C'est la vie.
             return None
 
+
+def localize(s: str) -> str:
+    """
+    Localize a string.
+
+    :param s: the original string
+    :type s:  ``str``
+    :return:
+    """
+    # TODO: At present, this function simply returns original string to allow for string marking in early development.
+    return s
 
 
 

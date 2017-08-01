@@ -8,8 +8,8 @@
 Provide a brief description of the module.
 """
 
-from .modeling import (
-    FieldInfo, ModelInfo, NenaSpec, Revision, Source, Target, FeatureTableInfo, FeatureTableInfoCollection, Usage)
+from .modeling import (FieldInfo, ModelInfo, NenaSpec, Revision, Source, SpatialInfo, Target, FeatureTableInfo,
+                       FeatureTableInfoCollection, Usage)
 from ..codetools import Dicts, Enums
 from ..geometry import DEFAULT_SRID, GeometryType
 from ..i18n import I18nPack
@@ -114,7 +114,7 @@ class JsonModelInfoParser(ModelInfoParser):
         """
         parsed = None  # We're going to try a couple of ways to parse the JSON.
         try:  # Let's see if we can just parse the input as JSON.
-            json.loads(s)
+            parsed = json.loads(s)
         except ValueError:
             pass  # Maybe the argument was a file path?
         if parsed is None:  # If we didn't parse the input string successfully...
@@ -123,9 +123,11 @@ class JsonModelInfoParser(ModelInfoParser):
                 parsed = json.load(json_file)
         # Let's pull the stuff we want out of the JSON object, like...
         name = Dicts.try_get(parsed, 'name', 'Nameless Model')  # ...the name of the model, and...
-        revision = JsonModelInfoParser._json_2_revision(parsed['revision'])  # ...the version (revision), and...
-        spatial = JsonModelInfoParser._json_2_spatial_relations(parsed['spatial'])  # ...the spatial relations.
-        model = ModelInfo(name=name, revision=revision, feature_tables=spatial)
+        revision = JsonModelInfoParser._json_2_revision(parsed['revision'])  # ...the version (revision),
+        # ...and the feature tables (which come from the 'spatial' property).
+        spatial_info = JsonModelInfoParser._json_2_spatial_info(parsed['spatial'])
+        # We should now have enough information to create our model info object.
+        model = ModelInfo(name=name, revision=revision, spatial_info=spatial_info)
         return model
 
     # def format(self, model):
@@ -145,6 +147,21 @@ class JsonModelInfoParser(ModelInfoParser):
                         sequence=Dicts.try_get(jsobj, 'sequence').value,
                         author_name=Dicts.try_get(jsobj, 'authorName').value,
                         author_email=Dicts.try_get(jsobj, 'authorEmail').value)
+
+    @staticmethod
+    def _json_2_spatial_info(jsobj: dict) -> SpatialInfo:
+        common_srid = jsobj['commonSrid']
+        # Create field information objects for the common fields.
+        common_fields = [JsonModelInfoParser._json_2_field_info(fij) for fij in jsobj['commonFields']]
+        default_identity = jsobj['defaultIdentity']
+        # The method that constructs the feature tables needs the common SRID and fields, so we need to pass it
+        # everything (not just the 'featureTables' property).
+        feature_tables = JsonModelInfoParser._json_2_feature_table_info_collection(jsobj)
+        # Now we have enough information to construct the spatial information object.
+        return SpatialInfo(common_srid=common_srid,
+                           common_fields=common_fields,
+                           default_identity = default_identity,
+                           feature_tables=feature_tables)
 
     @staticmethod
     def _json_2_feature_table_info_collection(jsobj: dict) -> FeatureTableInfoCollection:

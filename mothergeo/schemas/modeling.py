@@ -725,11 +725,75 @@ class FeatureTableInfoCollection(_RelationInfoCollection):
         return self.relations
 
 
+class SpatialInfo(object):
+    """
+    Instances of this class describe the spatial elements of a model.
+
+    :seealso: :py:class:`ModelInfo`
+    """
+    def __init__(self,
+                 common_srid: int,
+                 default_identity: str,
+                 common_fields: List[FieldInfo],
+                 feature_tables: FeatureTableInfoCollection):
+        """
+
+        :param common_srid: the common SRID
+        :type common_srid:  ``int``
+        :param default_identity: the name of the default identity field
+        :type default_identity:  ``str``
+        :param common_fields: field information objects that describe the fields common to all feature tables
+        :type common_fields: list[:py:class:`FieldInfo`]
+        :param feature_tables: the feature tables defined for the model
+        :type feature_tables: :py:class:`FeatureTableInfoCollection`
+        """
+        self._common_srid = common_srid
+        self._default_identity = default_identity
+        self._common_fields = common_fields
+        self._feature_tables = feature_tables
+
+    @property
+    def common_srid(self) -> int:
+        """
+        Get the common SRID.
+
+        :rtype: ``int``
+        """
+        return self._common_srid
+
+    @property
+    def common_fields(self) -> Iterator[FieldInfo]:
+        """
+        Get the common fields defined for the model.
+
+        :rtype: Iterator[FieldInfo]
+        """
+        return iter(self._common_fields)
+
+    @property
+    def feature_tables(self) -> FeatureTableInfoCollection:
+        """
+        Get the feature table information collection.
+
+        :rtype:  :py:class:`FeatureTableInfoCollection`
+        """
+        return self._feature_tables
+
+    @property
+    def default_identity(self) -> str:
+        """
+        Get the name of the default identity column.
+
+        :rtype: ``str``
+        """
+        return self._default_identity
+
+
 class ModelInfo(object):
     """
     Instances of this class describe a data model.
     """
-    def __init__(self, name: str, revision: Revision, feature_tables: FeatureTableInfoCollection):
+    def __init__(self, name: str, revision: Revision, spatial_info: SpatialInfo):
         """
         
         :param name: the model's name
@@ -738,13 +802,13 @@ class ModelInfo(object):
         :param revision: the model's revision information
         :type revision:  :py:class:`Revision`
         :seealso:  :py:func:`ModelInfo.revision`
-        :param feature_tables: the feature table information
-        :type feature_tables:  :py:class:`FeatureTableInfoCollection`
-        :seealso:  :py:func:`feature_tables`
+        :param spatial_info: the model's spatial stuff
+        :type spatial_info:  :py:class:`SpatialInfo`
+        :seealso:  :py:func:`spatial_info`
         """
         self._name = name
         self._revision = revision
-        self._feature_tables = feature_tables
+        self._spatial_info = spatial_info
 
     @property
     def name(self) -> str:
@@ -766,15 +830,15 @@ class ModelInfo(object):
         """
         return self._revision
 
-    # @property
-    # def feature_tables(self) -> FeatureTableInfoCollection:
-    #     """
-    #     Get the model's spatial relation information.
-    #
-    #     :return: the model's spatial relation information
-    #     :rtype:  :py:class:`FeatureTableInfoCollection`
-    #     """
-    #     return self._feature_tables.values()
+    @property
+    def spatial_info(self) -> SpatialInfo:
+        """
+        Get the model's spatial stuff.
+
+        :return: the model's spatial stuff
+        :rtype:  :py:class:`SpatialInfo`
+        """
+        return self._spatial_info
 
 
 
