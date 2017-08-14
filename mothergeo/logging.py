@@ -10,29 +10,25 @@ Dear diary...
 import logging
 
 
-def loggable_class(cls):
+def loggable_class(logger_name: str=None):
     """
     This is a decorator you can apply to a class to set it up with a Python ``logger`` property suitable for your
-    logging.rst needs.
-    
-    :param cls: the decorated class 
-    :type cls:  ``type``
-    """
-    # Create a variable to hold the reference to the logger.  If the class has specified the 'logger_name' property,
-    # we'll use it.  Otherwise, we'll defer until we have a reference to the object.
-    _logger = logging.getLogger(cls.logger_name) if hasattr(cls, 'logger_name') else None
+    logging needs.
 
-    # We need a function that will retrieve the logger.
-    def get_logger(obj):
-        nonlocal _logger  # Get a reference to the _logger property from the outer scope.
-        # If it hasn't been given a value...
-        if _logger is None:
-            # ...give it the default.
-            _logger = logging.getLogger('{module}.{cls}'.format(module=obj.__module__, cls=obj.__class__.__name__))
-        return _logger  # This is the answer.
-    # Add a logger property to the class.
-    cls.logger = property(lambda self: get_logger(self))
-    return cls
+    :param logger_name: a custom logger name
+    :type logger_name:  ``str``
+    """
+    # We need an inner function that actually adds the logger instance to the class.
+    def add_logger(cls):
+        # Establish what the name of the logger is going to be.  If the original caller didn't supply one, we'll use
+        # a default to construct one.
+        _logger_name = logger_name if logger_name is not None else '{module}.{cls}'.format(module=cls.__module__,
+                                                                                           cls=cls.__name__)
+        # Add a logger property to the class.
+        cls.logger = logging.getLogger(_logger_name)
+        return cls
+    # Return the inner function.
+    return add_logger
 
 
 
