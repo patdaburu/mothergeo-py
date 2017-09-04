@@ -52,7 +52,7 @@ The following commands will create a new virtual environment under my-project/my
 .. code-block:: bash
 
     cd my-project
-    virtualenv --python python3 venv
+    virtualenv --python python3.6 venv
 
 Activate the Environment
 ========================
