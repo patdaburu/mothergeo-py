@@ -8,6 +8,40 @@ How To Set Up a Virtual Python Environment (Linux)
 `Virtualenv documentation <https://virtualenv.pypa.io/en/stable/>`_.  This article provides a quick summary to help
 you set up and use a virtual environment.
 
+First, A Note About Python 3.6 and Ubuntu 16.04 LTS
+===================================================
+
+If you're running Ubuntu 16.04 LTS (or and earlier version), Python 3.5 is likely installed by default. *Don't remove
+it!*  To get Python 3.6, follow the instructions in this section.
+
+Add the PPA
+^^^^^^^^^^^
+
+Run the following command to add the Python 3.6 PPA.
+
+.. code-block:: bash
+
+    sudo add-apt-repository ppa:jonathonf/python-3.6
+
+Check for Updates and Install
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Check for updates and install Python 3.6 via the following commands.
+
+.. code-block:: bash
+
+    sudo apt-get update
+    sudo apt-get install python3.6
+
+Now you have three Python version, use ``python`` to run version 2.7, ``python3`` for version 3.5, and ``python3.6``
+for version 3.6.
+
+For more information on this subject, check out Ji m's article
+`How to Install Python 3.6.1 in Ubuntu 16.04 LTS <http://ubuntuhandbook.org/index.php/2017/07/install-python-3-6-1-in-ubuntu-16-04-lts/>`_.
+
+
+
+
 Create a Virtual Python Environment
 ===================================
 
@@ -18,7 +52,7 @@ The following commands will create a new virtual environment under my-project/my
 .. code-block:: bash
 
     cd my-project
-    virtualenv --python python3 venv
+    virtualenv --python python3.6 venv
 
 Activate the Environment
 ========================
