@@ -95,6 +95,6 @@ To return to normal system settings, use the ``deactivate`` command.
 After you issue this command, you'll notice that the command prompt returns to normal.
 
 Acknowledgments
----------------
+===============
 Much of this article is taken from
 `The Hitchhiker's Guide to Python <http://python-guide-pt-br.readthedocs.io/en/latest/>`_.  Go buy a copy right now.
