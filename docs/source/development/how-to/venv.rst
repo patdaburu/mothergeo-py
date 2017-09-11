@@ -8,8 +8,10 @@ How To Set Up a Virtual Python Environment (Linux)
 `Virtualenv documentation <https://virtualenv.pypa.io/en/stable/>`_.  This article provides a quick summary to help
 you set up and use a virtual environment.
 
-First, A Note About Python 3.6 and Ubuntu 16.04 LTS
-===================================================
+.. _venv-setup-ubuntu-1604:
+
+A Note About Python 3.6 and Ubuntu 16.04 LTS
+============================================
 
 If you're running Ubuntu 16.04 LTS (or and earlier version), Python 3.5 is likely installed by default. *Don't remove
 it!*  To get Python 3.6, follow the instructions in this section.
@@ -95,6 +97,6 @@ To return to normal system settings, use the ``deactivate`` command.
 After you issue this command, you'll notice that the command prompt returns to normal.
 
 Acknowledgments
----------------
+===============
 Much of this article is taken from
 `The Hitchhiker's Guide to Python <http://python-guide-pt-br.readthedocs.io/en/latest/>`_.  Go buy a copy right now.

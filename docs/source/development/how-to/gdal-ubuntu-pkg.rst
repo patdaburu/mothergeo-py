@@ -18,6 +18,18 @@ for us, there are `bindings for python <https://pypi.python.org/pypi/GDAL>`_.  I
 
 This article describes a process you can follow to install GDAL/OGR on Ubuntu.
 
+Before You Begin: Python 3.6
+----------------------------
+
+If you are installing the GDAL/OGR packages into a virtual environment based on Python 3.6, you may need to install the
+`python3.6-dev package <https://packages.ubuntu.com/zesty/python3.6-dev>`_.
+
+.. code-block:: bash
+
+    sudo apt-get install python3.6-dev
+
+For more information about creating virtual environments on Ubuntu 16.04 LTS, see :ref:`venv-setup-ubuntu-1604`.
+
 Install GDAL/OGR
 ----------------
 Much of this section is taken from a really helpful
@@ -43,7 +55,7 @@ Now you should be able to install the GDAL/OGR package.
 
     sudo apt-get install gdal-bin
 
-To verify the installation, you can run ``ogrinfo``.
+To verify the installation, you can run ``ogrinfo --version``.
 
 .. code-block:: bash
 
@@ -71,6 +83,25 @@ Now you can use ``pip`` to install the Python GDAL bindings.
 .. code-block:: bash
 
     pip install GDAL
+
+Putting It All Together
+-----------------------
+
+If you want to run the whole process at once, we've collected all the commands above in the script below.
+
+.. code-block:: bash
+
+    #!/usr/bin/env bash
+
+    sudo add-apt-repository ppa:ubuntugis/ppa && sudo apt-get update
+    sudo apt-get update
+    sudo apt-get install gdal-bin
+    sudo apt-get install libgdal-dev
+    export CPLUS_INCLUDE_PATH=/usr/include/gdal
+    export C_INCLUDE_PATH=/usr/include/gdal
+    pip install GDAL
+
+
 
 Try It Out
 ----------
