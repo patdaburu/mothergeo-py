@@ -40,4 +40,4 @@ class TestLoggable(unittest.TestCase):
         self.assertTrue(hasattr(test_obj, 'logger'))
         # Verify the test object logger's name meets the value we supplied.
         self.assertTrue('yabba.dabba.doo', test_obj.logger.name)
-        
+
