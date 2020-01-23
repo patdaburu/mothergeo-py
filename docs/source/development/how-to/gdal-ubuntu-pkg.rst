@@ -59,7 +59,9 @@ To verify the installation, you can run ``ogrinfo --version``.
 
 .. code-block:: bash
 
-    ogrinfo
+    ogrinfo --version
+    
+You will need the GDAL version to install the correct python bindings.   
 
 Install GDAL for Python
 -----------------------
@@ -82,7 +84,7 @@ Now you can use ``pip`` to install the Python GDAL bindings.
 
 .. code-block:: bash
 
-    pip install GDAL
+    pip install GDAL==<GDAL VERSION FROM OGRINFO>
 
 Putting It All Together
 -----------------------
