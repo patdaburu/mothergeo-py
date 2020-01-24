@@ -13,7 +13,6 @@ Word to your mother.
     :maxdepth: 2
 
     development
-    api
 
 
 
