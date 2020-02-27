@@ -41,7 +41,7 @@ automatically grab any necessary dependencies, including at least the relevant l
 
 .. code-block:: bash
 
-    sudo add-apt-repository ppa:ubuntugis/ppa && sudo apt-get update
+    sudo add-apt-repository ppa:ubuntugis/ppa
 
 Once you add the repository, go ahead and update your source packages.
 
