@@ -129,9 +129,9 @@ layers in an Esri file geodatabase.
 
     # opening the FileGDB
     try:
-        gdb = driver.Open(gdb_path, 0)
-    except Exception, e:
-        print e
+        gdb = driver.Open(GDB_PATH, 0)
+    except Exception as e:
+        print(e)
         sys.exit()
 
     # list to store layers'names
@@ -147,7 +147,7 @@ layers in an Esri file geodatabase.
 
     # printing
     for featsClass in featsClassList:
-        print featsClass
+        print(featsClass)
 
     # clean close
     del gdb
